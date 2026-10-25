@@ -870,7 +870,8 @@ void drawHands(const glm::mat4& viewProj, const glm::vec3& eyePos, const HandsVi
 	// upright: it looked better left out)
 	if (!model.staff || config::VrStaffHand)
 		drawMesh(model, MeshGunHand, viewProj, view.gunPose * gloves, 0.06f, 10.f);
-	if (view.otherHand)
+	// The staff has no slide to rack and needs no spare open hand.
+	if (view.otherHand && !model.staff)
 		drawMesh(model, MeshOpenHand, viewProj, view.handPose * gloves, 0.06f, 10.f);
 
 	bindVertexArray(0);

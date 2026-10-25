@@ -1685,7 +1685,10 @@ void updateGun(Gun& g, XrTime time, const XrSpaceLocation *locations, const bool
 		// A gun in each hand leaves no hand for the slide: pointing a gun at the floor
 		// reloads it instead (a gun that's held: not while the hand holds its controller).
 		// With vr.Reload 1 pointing away from the screen does (below), once each time.
-		if (!slide && live && holds(g.hand) == Holds::Gun && config::VrReload != 1)
+		// MOK has no slide to replace: its Reload menu must govern both staffs.
+		const hands::Source *reloadSource = gameModelSource();
+		if (!slide && live && holds(g.hand) == Holds::Gun && config::VrReload != 1
+				&& (reloadSource == nullptr || reloadSource->kind != hands::Source::HerosStaff))
 		{
 			if (!g.pointedDown && d.y < -0.75f)
 			{

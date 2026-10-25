@@ -20,7 +20,7 @@
 
 The Maze of the Kings for standalone Meta Quest and Windows PC VR, built on mikermak's [HOTD2 VR](https://github.com/mikermak/hotd2-vr), [Flycast](https://github.com/flyinghead/flycast), and the shared Confidential Mission and Lupin VR adaptations. This standalone edition keeps MOK's existing measured camera and staff extractor and adds the common paused menu, current hand controls, separate setup and releases.
 
-**No game is included.** Bring your own `mok.zip`, its matching GDS-0022 disc and a supported NAOMI BIOS. The app generates its staff on your device from your files. Unofficial fan project; not affiliated with Sega, Hitmaker, Meta or the Flycast project. The banner is an original promotional illustration, not a gameplay screenshot.
+**No game is included.** Bring your own `mok.zip`, its matching GDS-0022 disc and a supported NAOMI BIOS. The app generates its staff on your device from your files. Unofficial fan project; not affiliated with Sega, Hitmaker, Meta or the Flycast project. The banner is an AI-generated promotional composition based on local game-capture references, not a gameplay or headset screenshot.
 
 **Experimental:** automated checks and desktop XR simulator evidence are recorded in [validation](hotd2-vr/notes/mok-validation.md). Physical headset tracking, comfort, sustained performance and full later-stage coverage remain pending.
 
@@ -74,7 +74,7 @@ The setup also checks the app's private `files/games` folders, which do not need
 | P1 Start, solo | Right A |
 | Join P2, solo | Left X |
 | Start with two players | X for the left-hand player; A for the right-hand player |
-| Reload / native secondary input | B/Y; off-screen reload follows the chosen mode |
+| Reload | B/Y; Shoot off-screen requires a trigger pull away from the screen; Point off-screen reloads on leaving it |
 | Settings | Left Menu |
 | Recenter | Left stick click |
 | Laser toggle | Right stick click |
@@ -82,7 +82,7 @@ The setup also checks the app's private `files/games` folders, which do not need
 
 **Two players** changes the layout only when both players are active. It defaults to P1 left / P2 right; choose P1 right / P2 left to swap them. Solo trigger switching is independent of this setting. Held Start presses keep their original player ownership through joins, exits and swaps.
 
-The staff has no pistol slide. Shared effects and reload inputs are inherited; this port does not claim a newly measured MOK native magazine/accepted-shot model or automatic cutscene hand hiding.
+The staff has no pistol slide or spare open hand. The default **Shoot off-screen** mode requires an off-screen trigger pull; **Point off-screen** reloads once on leaving the screen and re-arms on returning. B/Y explicitly reloads in either mode. This port does not claim a newly measured MOK native magazine/accepted-shot model or automatic cutscene hand hiding.
 
 ## Models and settings
 

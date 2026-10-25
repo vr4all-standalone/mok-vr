@@ -10,4 +10,4 @@ These checks still require a real headset; desktop simulation does not establish
 - Haptic feel, comfort, sustained frame rate and temperature on each Quest model.
 - PC VR on the user's actual OpenXR runtime and controller profile.
 
-No physical headset was installed or tested during this implementation.
+The signed test build is installed on the connected Quest 3S, with the user’s game files in Download. Physical play, comfort and aiming validation remain with the user. The generated staff cache was explicitly removed for a fresh-extraction check; bundled controller models, saves and settings were preserved.

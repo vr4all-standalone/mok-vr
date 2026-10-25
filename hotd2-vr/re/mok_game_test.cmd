@@ -34,6 +34,8 @@ cl /nologo /std:c++17 /EHsc /O2 /W3 /I"%ROOT%\core" /Femok-preparation-input.exe
 if errorlevel 1 goto build_failed
 mok-preparation-input.exe
 if errorlevel 1 goto failed
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\mok-reload-test.ps1"
+if errorlevel 1 goto failed
 popd
 exit /b 0
 :build_failed
