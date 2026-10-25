@@ -9,9 +9,9 @@ rem in PATH (devkitPro's msys2 one, say) can't get in the way: it cannot drive M
 setlocal
 set BUILD_TYPE=%1
 if "%BUILD_TYPE%"=="" set BUILD_TYPE=RelWithDebInfo
-set STANDALONE_LUPIN=%~2
-if "%STANDALONE_LUPIN%"=="" set STANDALONE_LUPIN=ON
-if /I not "%STANDALONE_LUPIN%"=="ON" if /I not "%STANDALONE_LUPIN%"=="OFF" (
+set STANDALONE_MOK=%~2
+if "%STANDALONE_MOK%"=="" set STANDALONE_MOK=ON
+if /I not "%STANDALONE_MOK%"=="ON" if /I not "%STANDALONE_MOK%"=="OFF" (
     echo Standalone policy must be ON or OFF.
     exit /b 1
 )
@@ -25,7 +25,7 @@ call "%VSROOT%\VC\Auxiliary\Build\vcvars64.bat" >nul || exit /b 1
 set CMAKE=%VSROOT%\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe
 set NINJA=%VSROOT%\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe
 cd /d "%~dp0.." || exit /b 1
-"%CMAKE%" -S . -B build-win -G Ninja -DCMAKE_MAKE_PROGRAM="%NINJA%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DUSE_DX9=OFF -DUSE_OPENXR=ON -DVR_STANDALONE_LUPIN=%STANDALONE_LUPIN% || exit /b 1
+"%CMAKE%" -S . -B build-win -G Ninja -DCMAKE_MAKE_PROGRAM="%NINJA%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DUSE_DX9=OFF -DUSE_OPENXR=ON -DVR_STANDALONE_MOK=%STANDALONE_MOK% || exit /b 1
 "%CMAKE%" --build build-win --parallel || exit /b 1
 echo.
 echo Built: %CD%\build-win\flycast.exe

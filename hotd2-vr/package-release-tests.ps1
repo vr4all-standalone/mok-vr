@@ -22,7 +22,7 @@ function Check([string]$name, [bool]$condition) {
     $script:checks++
     if ($condition) { Write-Host "PASS $name" } else { $script:failures++; Write-Host "FAIL $name" -ForegroundColor Red }
 }
-$work = Join-Path $repo ('.cache\lupin-package-tests-' + [guid]::NewGuid().ToString('N'))
+$work = Join-Path $repo ('.cache\mok-package-tests-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $work -Force | Out-Null
 function Archive([string]$name, [hashtable]$entries) {
     $path = Join-Path $work $name
@@ -41,13 +41,13 @@ function Archive([string]$name, [hashtable]$entries) {
     $path
 }
 try {
-    Check 'Lupin application ID' ($appId -eq 'com.vrlightgunhub.lupin')
-    Check 'Lupin label' ($appLabel -eq 'Lupin the Third VR')
-    Check 'Lupin release base version' ($appVersion -eq '1.0.2')
-    Check 'Lupin setup launcher' ($appLauncher -eq 'com.flycast.emulator.LupinStartActivity')
-    Check 'Lupin PC launcher name' ($playCmd -eq 'Play Lupin the Third.cmd')
-    $banned = @('roms/LUPINSHOO.ZIP','roms/lupinshoo/gds-0018.chd','gds-0018.cue','gds-0018.gdi',
-        '317-0325-jpn.pic','data/gun-lp-pistol.bin','rip/frame.txt','shot_00001.png','naomi.zip')
+    Check 'MOK application ID' ($appId -eq 'com.vrlightgunhub.mok')
+    Check 'MOK label' ($appLabel -eq 'The Maze of the Kings VR')
+    Check 'MOK release base version' ($appVersion -eq '1.0.0')
+    Check 'MOK setup launcher' ($appLauncher -eq 'com.flycast.emulator.MokStartActivity')
+    Check 'MOK PC launcher name' ($playCmd -eq 'Play The Maze of the Kings.cmd')
+    $banned = @('roms/MOK.ZIP','roms/mok/gds-0022.chd','gds-0022.cue','gds-0022.gdi',
+        '317-0333-com.pic','data/gun-lp-pistol.bin','rip/frame.txt','shot_00001.png','naomi.zip')
     $entries = @{}; foreach ($name in $banned) { $entries[$name] = 'synthetic fixture' }
     $archive = Archive 'game-data.zip' $entries
     $found = @(Find-GameData $archive)
@@ -60,7 +60,7 @@ try {
     Check 'credited model accepted' (@(Find-UncreditedModels $archive).Count -eq 0)
     $gpl = Get-Content -LiteralPath (Join-Path $repo 'core/deps/picotcp/LICENSE.GPLv3') -Raw
     $mit = Get-Content -LiteralPath (Join-Path $repo 'core/deps/cgltf/LICENSE') -Raw
-    $licence = "Lupin the Third VR`n$gpl`n$mit"
+    $licence = "The Maze of the Kings VR`n$gpl`n$mit"
     $archive = Archive 'licensed.zip' @{'LICENSE.txt'=$licence}
     Check 'GPL-3 and cgltf notice accepted' (-not (Find-LicenceFault $archive))
     $archive = Archive 'missing-mit.apk' @{'assets/LICENSE.txt'=$gpl}
@@ -74,24 +74,24 @@ try {
     Check 'longer commit with matching prefix rejected' (-not (Test-NamesCommit 'synthetic binary' ([Text.Encoding]::ASCII.GetBytes('v0-1-gabc123f')) 'abc123'))
 
     $tree = @('E: manifest', '  E: uses-permission', '    A: android:name(0x01010003)="com.oculus.permission.RENDER_MODEL"',
-        '  E: application', '    E: activity', '      A: android:name(0x01010003)="com.flycast.emulator.LupinStartActivity"',
+        '  E: application', '    E: activity', '      A: android:name(0x01010003)="com.flycast.emulator.MokStartActivity"',
         '      E: intent-filter', '        E: category', '          A: android:name(0x01010003)="android.intent.category.LAUNCHER"')
-    Check 'manifest launcher parser uses activity owner' (@(Get-LauncherOwners $tree) -join ',' -eq 'com.flycast.emulator.LupinStartActivity')
-    $badging = @("package: name='com.vrlightgunhub.lupin' versionCode='3' versionName='1.0.2-gabc123'", "application-label:'Lupin the Third VR'")
+    Check 'manifest launcher parser uses activity owner' (@(Get-LauncherOwners $tree) -join ',' -eq 'com.flycast.emulator.MokStartActivity')
+    $badging = @("package: name='com.vrlightgunhub.mok' versionCode='1' versionName='1.0.0-gabc123'", "application-label:'The Maze of the Kings VR'")
     $hasIdentityCheck = [bool](Get-Command Find-AppIdentityFault -ErrorAction SilentlyContinue)
     Check 'APK metadata validator is independently testable' $hasIdentityCheck
     if ($hasIdentityCheck) {
-        Check 'valid Lupin APK metadata accepted' (@(Find-AppIdentityFault $badging $tree 'abc123' $false).Count -eq 0)
+        Check 'valid MOK APK metadata accepted' (@(Find-AppIdentityFault $badging $tree 'abc123' $false).Count -eq 0)
         foreach ($case in @(
-            @('package', 'com.vrlightgunhub.lupin', 'com.vrlightgunhub.confmiss'),
-            @('version code', "versionCode='3'", "versionCode='9'"),
-            @('base version', '1.0.2-gabc123', '1.2.0-gabc123'),
-            @('commit version', '1.0.2-gabc123', '1.0.2-gdef456'),
-            @('label', 'Lupin the Third VR', 'Confidential Mission VR'))) {
+            @('package', 'com.vrlightgunhub.mok', 'com.vrlightgunhub.confmiss'),
+            @('version code', "versionCode='1'", "versionCode='9'"),
+            @('base version', '1.0.0-gabc123', '1.2.0-gabc123'),
+            @('commit version', '1.0.0-gabc123', '1.0.0-gdef456'),
+            @('label', 'The Maze of the Kings VR', 'Confidential Mission VR'))) {
             $changed = @($badging | ForEach-Object { $_.Replace($case[1],$case[2]) })
             Check "wrong APK $($case[0]) rejected" (@(Find-AppIdentityFault $changed $tree 'abc123' $false).Count -gt 0)
         }
-        $changed = @($tree | ForEach-Object { $_.Replace('LupinStartActivity','CmStartActivity') })
+        $changed = @($tree | ForEach-Object { $_.Replace('MokStartActivity','CmStartActivity') })
         Check 'old setup activity rejected' (@(Find-AppIdentityFault $badging $changed 'abc123' $false).Count -gt 0)
         $changed = @($tree | Where-Object { $_ -notmatch 'RENDER_MODEL' })
         Check 'missing controller-model permission rejected' (@(Find-AppIdentityFault $badging $changed 'abc123' $false).Count -gt 0)
@@ -101,11 +101,11 @@ try {
     $hasPcCheck = [bool](Get-Command Find-PcArchiveFault -ErrorAction SilentlyContinue)
     Check 'portable PC archive validator is independently testable' $hasPcCheck
     if ($hasPcCheck) {
-        $files = @('flycast.exe','emu.cfg','README.txt','LICENSE.txt','Play Lupin the Third.cmd')
-        $readme = 'Lupin the Third VR. Implementation in progress. roms\lupinshoo.zip roms\lupinshoo\gds-0018.chd roms\naomi.zip Play Lupin the Third.cmd'
-        $entries = @{'flycast.exe'='synthetic'; 'emu.cfg'="[config]`npvr.rend = 0`nrend.NativeDepthInterpolation = yes`nvr.Xr = yes"; 'README.txt'=$readme; 'LICENSE.txt'=$licence; 'Play Lupin the Third.cmd'='start "" /D "%~dp0" "%~dp0flycast.exe" "%~dp0roms\lupinshoo.zip"'}
+        $files = @('flycast.exe','emu.cfg','README.txt','LICENSE.txt','Play The Maze of the Kings.cmd')
+        $readme = 'The Maze of the Kings VR. Implementation in progress. roms\mok.zip roms\mok\gds-0022.chd roms\naomi.zip Play The Maze of the Kings.cmd'
+        $entries = @{'flycast.exe'='synthetic'; 'emu.cfg'="[config]`npvr.rend = 0`nrend.NativeDepthInterpolation = yes`nvr.Xr = yes"; 'README.txt'=$readme; 'LICENSE.txt'=$licence; 'Play The Maze of the Kings.cmd'='start "" /D "%~dp0" "%~dp0flycast.exe" "%~dp0roms\mok.zip"'}
         $archive = Archive 'portable-valid.zip' $entries
-        Check 'exact portable Lupin archive accepted' (@(Find-PcArchiveFault $archive $files).Count -eq 0)
+        Check 'exact portable MOK archive accepted' (@(Find-PcArchiveFault $archive $files).Count -eq 0)
         $goodConfig = $entries['emu.cfg']
         $entries['emu.cfg'] = $goodConfig.Replace('pvr.rend', 'pvrXrend')
         $archive = Archive 'portable-typo-default.zip' $entries
@@ -114,11 +114,11 @@ try {
         $archive = Archive 'portable-vr-off.zip' $entries
         Check 'VR-off portable default rejected' (@(Find-PcArchiveFault $archive $files).Count -gt 0)
         $entries['emu.cfg'] = $goodConfig
-        $goodLauncher = $entries['Play Lupin the Third.cmd']
-        $entries['Play Lupin the Third.cmd'] = $goodLauncher.Replace('lupinshoo.zip','confmiss.zip')
+        $goodLauncher = $entries['Play The Maze of the Kings.cmd']
+        $entries['Play The Maze of the Kings.cmd'] = $goodLauncher.Replace('mok.zip','confmiss.zip')
         $archive = Archive 'portable-wrong-launch.zip' $entries
         Check 'foreign-game launcher rejected' (@(Find-PcArchiveFault $archive $files).Count -gt 0)
-        $entries['Play Lupin the Third.cmd'] = $goodLauncher
+        $entries['Play The Maze of the Kings.cmd'] = $goodLauncher
         # Exercise the actual literal README/config generators and actual launcher, without
         # running the package orchestration or consuming any build artefact.
         $readmeStatement = $ast.EndBlock.Statements | Where-Object {
@@ -129,11 +129,11 @@ try {
         $production = $entries.Clone()
         $production['README.txt'] = $generatedReadme
         $production['emu.cfg'] = $generatedConfig
-        $production['Play Lupin the Third.cmd'] = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'assets/Play Lupin the Third.cmd') -Raw
+        $production['Play The Maze of the Kings.cmd'] = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'assets/Play The Maze of the Kings.cmd') -Raw
         $archive = Archive 'portable-production-templates.zip' $production
         Check 'production README config and launcher satisfy portable checks' (@(Find-PcArchiveFault $archive $files).Count -eq 0)
         Check 'packaged README explicitly marks implementation in progress' ($generatedReadme.Contains('Implementation in progress.'))
-        $entries['README.txt'] = $readme.Replace('Lupin the Third VR','Confidential Mission VR')
+        $entries['README.txt'] = $readme.Replace('The Maze of the Kings VR','Confidential Mission VR')
         $archive = Archive 'portable-wrong-readme.zip' $entries
         Check 'stale CM README rejected' (@(Find-PcArchiveFault $archive $files).Count -gt 0)
         $entries['README.txt'] = $readme
@@ -144,12 +144,12 @@ try {
         $archive = Archive 'portable-missing.zip' $entries
         Check 'missing portable archive file rejected' (@(Find-PcArchiveFault $archive $files).Count -gt 0)
     }
-    $launcher = Join-Path $PSScriptRoot 'assets/Play Lupin the Third.cmd'
-    Check 'Lupin launcher exists' (Test-Path -LiteralPath $launcher)
+    $launcher = Join-Path $PSScriptRoot 'assets/Play The Maze of the Kings.cmd'
+    Check 'MOK launcher exists' (Test-Path -LiteralPath $launcher)
     if (Test-Path -LiteralPath $launcher) {
         $text = Get-Content -LiteralPath $launcher -Raw
         Check 'launcher uses portable working directory' ($text -match 'start\s+""\s+/D\s+"%~dp0"')
-        Check 'launcher selects original Lupin set' ($text.Contains('%~dp0roms\lupinshoo.zip'))
+        Check 'launcher selects original MOK set' ($text.Contains('%~dp0roms\mok.zip'))
     }
     Write-Host "Release checks: $script:checks total, $script:failures failed"
 } finally {

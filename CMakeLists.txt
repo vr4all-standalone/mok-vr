@@ -93,7 +93,7 @@ option(USE_VULKAN "Build with Vulkan support" ON)
 set(MOLTENVK_DYLIB "" CACHE FILEPATH "Path to macOS MoltenVK dylib for macOS Vulkan builds")
 option(USE_DX9 "Build with Direct3D 9 support" ON)
 option(USE_OPENXR "Android: build as an immersive OpenXR headset app; Windows: PCVR (hotd2-vr)" OFF)
-option(VR_STANDALONE_LUPIN "Restrict loaded games to Lupin the Third: The Shooting" OFF)
+option(VR_STANDALONE_MOK "Restrict loaded games to The Maze of the Kings" OFF)
 option(USE_DX11 "Build with Direct3D 11 support" ON)
 option(LIBRETRO "Build libretro core" OFF)
 option(USE_OPENGL "Use OpenGL API" ON)
@@ -287,8 +287,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 		CMAKE_CXX_STANDARD 20
 		CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(VR_STANDALONE_LUPIN)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE VR_STANDALONE_LUPIN=1)
+if(VR_STANDALONE_MOK)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE VR_STANDALONE_MOK=1)
 endif()
 
 if(WINDOWS_STORE)

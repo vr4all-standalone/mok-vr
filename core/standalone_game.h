@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #pragma once
 #include <string_view>
-
 namespace vr {
-// Evaluate loaded media metadata, never a path or emulated RAM. Ordinary Flycast and
-// regression builds keep their normal game selection when the option is absent/OFF.
 inline const char *standaloneGameError(std::string_view gameId)
 {
-#if defined(VR_STANDALONE_LUPIN) && VR_STANDALONE_LUPIN
-    if (gameId != "LUPIN THE THIRD  -THE SHOOTING-")
-        return "Lupin the Third VR only supports Lupin the Third: The Shooting (original GDS-0018).";
+#if defined(VR_STANDALONE_MOK) && VR_STANDALONE_MOK
+    if (gameId != "THE MAZE OF THE KINGS")
+        return "The Maze of the Kings VR only supports The Maze of the Kings (GDS-0022, mok.zip).";
 #endif
     return nullptr;
 }

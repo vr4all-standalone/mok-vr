@@ -23,6 +23,7 @@
 #include "xr_sim.h"
 #include "xr_own.h"
 #include "hands_rip.h"
+#include "preparation_input.h"
 #include "rend/gles/gles.h"
 #ifdef __ANDROID__
 // the Quest: OpenGL ES through EGL
@@ -202,6 +203,7 @@ std::atomic<bool> menuOpen;		// (read by the app's resume on Android's main thre
 int pauseRequest = -1;
 bool menuFresh, redrawLogged;
 bool skipWas, skipSwallow, startSwallow;
+PreparationInput preparationInput;
 #ifndef __ANDROID__
 bool quitPending;
 #endif
@@ -708,7 +710,7 @@ bool init()
 #endif
 	createInfo.enabledExtensionCount = (u32)extensions.size();
 	createInfo.enabledExtensionNames = extensions.data();
-	strcpy(createInfo.applicationInfo.applicationName, "Lupin the Third VR");
+	strcpy(createInfo.applicationInfo.applicationName, "The Maze of the Kings VR");
 	createInfo.applicationInfo.applicationVersion = 1;
 	strcpy(createInfo.applicationInfo.engineName, "Flycast");
 	createInfo.applicationInfo.engineVersion = 1;
@@ -2100,12 +2102,15 @@ void updateLightgun(XrTime time)
 	sync.activeActionSets = &active;
 	if (!XR_SUCCEEDED(XR(xrSyncActions)(session, &sync)))
 		return;
+	const bool rawSkip = boolAction(skipAction);
+	const auto prepButtons = preparationInput.filter(preparing, boolAction(startAction, Left),
+			boolAction(startAction, Right), rawSkip);
 	if (!boolAction(startAction, Right))
 		startSwallow = false;
 	// The left Start, and the settings menu just asked for (menuEdge). Where the menu is the left
 	// Start held 0.8 s (menuByHold), that hold is the menu, and a shorter press acts as the left
 	// Start once it's let go, held for 150 ms (the game reads its buttons once a frame).
-	bool leftStart = boolAction(startAction, Left);
+	bool leftStart = prepButtons[0];
 	const bool menu = boolAction(menuAction);
 	bool menuEdge = menu && !menuWas;
 	menuWas = menu;
@@ -2130,21 +2135,23 @@ void updateLightgun(XrTime time)
 		leftHoldMenu = false;
 	}
 	// Sample presses and releases even while paused; only the game-input send is suppressed.
-	const bool rightStart = boolAction(startAction, Right) && !startSwallow;
+	const bool rightStart = prepButtons[1] && !startSwallow;
 	bool p1Start, p2Start;
 	playerStartButtons(leftStart, rightStart, p1Start, p2Start);
 	// B (or Y; Vive wands, Windows Mixed Reality: a pad click): the game's reload, or not now for
 	// the gun run, or the VR menu closed
-	const bool skip = boolAction(skipAction);
+	const bool skip = prepButtons[2];
 	const bool skipEdge = skip && !skipWas;
 	skipWas = skip;
-	if (!skip)
+	if (!rawSkip)
 		skipSwallow = false;
 	if (preparing)
 	{
 		// B (or Y): not now, the arcade gun this time (the menu button does nothing now)
-		if (skip)
+		if (rawSkip) {
+			skipSwallow = true;
 			hands::skipPrep();
+		}
 		if (menuEdge)
 		{
 			NOTICE_LOG(INPUT, "XR: menu button");
@@ -2885,6 +2892,7 @@ void term()
 	dualWield = p2StartWas = recenterWas = laserWas = menuWas = p1StartWas = false;
 	startHeld[Left] = startHeld[Right] = false;
 	skipWas = skipSwallow = false;
+	preparationInput = {};
 	// (what the hands hold stays, p1Armed and menuHowToPlay: player 2's gun went without a word)
 	for (int hand : { Left, Right })
 		heldWas[hand] = holds(hand);

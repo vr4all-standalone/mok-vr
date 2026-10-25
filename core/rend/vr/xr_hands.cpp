@@ -32,6 +32,7 @@
 */
 #include "xr_hands.h"
 #include "hands_rip.h"
+#include "staff_cache.h"
 #include "glb_mesh.h"
 #include "xr_own.h"
 #include "rend/vr_reproject.h"
@@ -642,6 +643,15 @@ const HandsModel *gunModel(GunKind kind)
 		const hands::Source *source = gameModelSource();
 		if (source != nullptr)
 		{
+			if (source->kind == hands::Source::HerosStaff) {
+                const std::string path = hands::modelPath();
+                slot.missing = !file_exists(path);
+                if (kind == GunKind::Pistol && hands::loadStaffCache(path)) {
+                    slot.loaded = load(slot.model, path, std::string(), slot.missing);
+                    if (slot.loaded) slot.model.flags |= hands::ModelComplete;
+                }
+                return slot.loaded ? &slot.model.info : nullptr;
+            }
 			const hands::GunTarget& gun = source->guns[(int)kind - 1];
 			if (gun.used())
 			{
@@ -680,7 +690,7 @@ const char *gunName(GunKind kind)
 	switch (kind)
 	{
 	case GunKind::Pistol:
-		return "in-game pistol";
+		return gameModelSource() != nullptr && gameModelSource()->kind == hands::Source::HerosStaff ? "in-game staff" : "in-game pistol";
 	case GunKind::Rifle:
 		return "assault rifle";
 	default:
@@ -804,7 +814,7 @@ std::vector<GunChoice> gunChoices()
 		return { { (int)config::VrGun, config::VrGameHands && handsModel() != nullptr ? "The game's own" : "Arcade gun", true, true } };
 	// (with the game's own models off the pistol isn't made: the row passes it)
 	std::vector<GunChoice> choices {
-		{ 1, "In-game pistol", config::VrGameHands && gunModel(GunKind::Pistol) != nullptr, gunComplete(GunKind::Pistol) },
+		{ 1, gameModelSource() != nullptr && gameModelSource()->kind == hands::Source::HerosStaff ? "In-game staff" : "In-game pistol", config::VrGameHands && gunModel(GunKind::Pistol) != nullptr, gunComplete(GunKind::Pistol) },
 	};
 	// the folder guns, whatever vr.GameHands says: the bundled ones first (a skipped one isn't made)
 	refreshOwn();

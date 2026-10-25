@@ -6,6 +6,7 @@
 */
 #include "hands_rip.h"
 #include "hands_build.h"
+#include "staff_cache.h"
 #include "xr_host.h"
 #include "xr_sim.h"
 #include "rend/vr_reproject.h"
@@ -151,6 +152,8 @@ bool haveModel()
 				return false;
 		return true;
 	}
+	if (source != nullptr && source->kind == Source::HerosStaff)
+		return loadStaffCache(modelPath());
 	return file_exists(modelPath()) || (!legacyModelPath().empty() && file_exists(legacyModelPath()));
 }
 
@@ -302,7 +305,7 @@ void onVBlank()
 				if (source->guns[i].attractBy <= 0.f)
 					gunDone[i] = true;
 		}
-		stopPrep("skipped", lupinRun || (cmRun && !watch) ? Off : Watching);
+		stopPrep("skipped", staffRun || lupinRun || (cmRun && !watch) ? Off : Watching);
 		if (watch)
 			logWatched(*source);
 		return;

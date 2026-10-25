@@ -2,9 +2,9 @@ name: Windows PCVR
 
 on:
   push:
-    branches: [hotd2-vr, 'codex/**']
+    branches: [main, 'codex/**']
   pull_request:
-    branches: [hotd2-vr]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,7 +26,7 @@ jobs:
           arch: x64
 
       - name: Configure PCVR Release
-        run: cmake -S . -B build-win -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_OPENXR=ON -DUSE_DX9=OFF
+        run: cmake -S . -B build-win -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_OPENXR=ON -DUSE_DX9=OFF -DVR_STANDALONE_MOK=ON
 
       - name: Build
         run: cmake --build build-win --parallel
@@ -46,5 +46,5 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
-          name: hotd2-vr-pcvr-windows-x64
+          name: mok-vr-pcvr-windows-x64
           path: pcvr-artifact/*

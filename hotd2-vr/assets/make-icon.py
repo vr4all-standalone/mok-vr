@@ -1,6 +1,6 @@
 """
-Draws the launcher icon of Lupin the Third VR (the Quest build, "vr" build type): the
-initials LT inside the four corner brackets of a target lock, with a small VR under them, from
+Draws the launcher icon of The Maze of the Kings VR (the Quest build, "vr" build type): the
+initials MK inside the four corner brackets of a target lock, with a small VR under them, from
 plain shapes only. No font, no game or company art (nothing of Sega's logo or the game's). Writes
 the five legacy densities into the vr source set, where they override the main source set's
 ic_launcher.png at the same sizes:
@@ -23,8 +23,8 @@ SIZES = {"ldpi": 36, "mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144}
 
 BIG = 1152                    # drawn once at this size, then scaled down (a multiple of 36, 48, 72 and 144)
 BACK = (20, 20, 24, 255)      # charcoal
-EDGE = (120, 18, 24, 255)     # a dark red rim, so the tile stands out on a dark home screen
-LOCK = (226, 36, 42, 255)     # crimson: the brackets and the VR
+EDGE = (104, 77, 23, 255)     # a dark red rim, so the tile stands out on a dark home screen
+LOCK = (214, 177, 90, 255)     # crimson: the brackets and the VR
 LETTERS = (255, 255, 255, 255)
 
 
@@ -47,17 +47,12 @@ def letter_v(d, x0, y0, w, h, t):
                (cx + c, y1), (cx - c, y1)], fill=255)
 
 
-def letter_l(d, x0, y0, w, h, t):
-    """An L made from its stem and foot."""
-    d.rectangle([x0, y0, x0 + t, y0 + h], fill=255)
-    d.rectangle([x0, y0 + h - t, x0 + w, y0 + h], fill=255)
+def letter_m(d, x0, y0, w, h, t):
+    d.line([(x0, y0+h), (x0, y0), (x0+w/2, y0+h*.52), (x0+w, y0), (x0+w, y0+h)], fill=255, width=round(t), joint="curve")
 
-
-def letter_t(d, x0, y0, w, h, t):
-    """A T made from its top bar and centred stem."""
-    d.rectangle([x0, y0, x0 + w, y0 + t], fill=255)
-    cx = x0 + w / 2
-    d.rectangle([cx - t / 2, y0, cx + t / 2, y0 + h], fill=255)
+def letter_k(d, x0, y0, w, h, t):
+    d.line([(x0, y0), (x0, y0+h)], fill=255, width=round(t))
+    d.line([(x0+w, y0), (x0, y0+h*.52), (x0+w, y0+h)], fill=255, width=round(t), joint="curve")
 
 def letter_r(d, x0, y0, w, h, t):
     """An R in the box (x0, y0, w, h) with strokes t wide: stem, round bowl, straight leg."""
@@ -94,14 +89,14 @@ def draw():
             d.rectangle(sorted_box(x, y, x + sx * arm, y + sy * t), fill=LOCK)
             d.rectangle(sorted_box(x, y, x + sx * t, y + sy * arm), fill=LOCK)
 
-    # LT, as big as the brackets allow, a little above the middle
+    # MK, as big as the brackets allow, a little above the middle
     mask = Image.new("L", (BIG, BIG), 0)
     md = ImageDraw.Draw(mask)
     lh, cw, mw, gap, stroke = u(0.27), u(0.22), u(0.25), u(0.035), u(0.065)
     x = BIG / 2 - (cw + gap + mw) / 2
     y = u(0.30)
-    letter_l(md, x, y, cw, lh, stroke)
-    letter_t(md, x + cw + gap, y, mw, lh, stroke)
+    letter_m(md, x, y, cw, lh, stroke)
+    letter_k(md, x + cw + gap, y, mw, lh, stroke)
     img.paste(Image.new("RGBA", (BIG, BIG), LETTERS), (0, 0), mask)
 
     # a small VR under it

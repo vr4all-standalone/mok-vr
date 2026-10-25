@@ -189,7 +189,7 @@ public abstract class BaseGLActivity extends Activity implements ActivityCompat.
     }
 
     // hotd2-vr: the "vr" build type's applicationId (build.gradle.kts, androidComponents)
-    private static final String VR_APPLICATION_ID = "com.vrlightgunhub.lupin";
+    private static final String VR_APPLICATION_ID = "com.vrlightgunhub.mok";
 
 	// Called from native code
     public void showAlertDialog(String message)
@@ -218,14 +218,14 @@ public abstract class BaseGLActivity extends Activity implements ActivityCompat.
     private String findVrGame()
     {
         Intent intent = getIntent();
-        String picked = intent != null ? intent.getStringExtra(LupinStartActivity.EXTRA_GAME) : null;
+        String picked = intent != null ? intent.getStringExtra(MokStartActivity.EXTRA_GAME) : null;
         if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
             if (uri == null || uri.getPath() == null || (uri.getScheme() != null && !"file".equals(uri.getScheme())))
                 return null;
             picked = uri.getPath();
         }
-        return LupinFiles.launchPath(picked != null ? new File(picked) : null, LupinStartActivity.roots(this));
+        return MokFiles.launchPath(picked != null ? new File(picked) : null, MokStartActivity.roots(this));
     }
     // hotd2-vr: the start screen, when the game can't start yet
     private void showVrSetup()
@@ -234,14 +234,14 @@ public abstract class BaseGLActivity extends Activity implements ActivityCompat.
     }
 
     /**
-     * hotd2-vr: back to Lupin the Third VR's start screen (LupinStartActivity): it opens in the
+     * hotd2-vr: back to The Maze of the Kings VR's start screen (MokStartActivity): it opens in the
      * headset's home (an immersive app opens a panel that way), and the game's activity finishes.
      * The VR menu's "Quit to the start screen" calls this through JNI, from any thread.
      */
     public static void quitToStart(Activity activity)
     {
         activity.runOnUiThread(() -> {
-            Intent panel = new Intent(activity.getApplicationContext(), LupinStartActivity.class);
+            Intent panel = new Intent(activity.getApplicationContext(), MokStartActivity.class);
             panel.setAction(Intent.ACTION_MAIN);
             panel.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {

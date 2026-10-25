@@ -373,6 +373,7 @@ static std::vector<GameProfile> makeProfiles()
 	// about a third more polygons in the story).
 	p = GameProfile();
 	p.gameId = "THE MAZE OF THE KINGS";
+	p.gunMenu = true;
 	p.projAddr = 0x0E7A60;
 	p.viewportAddr = 0x0F24D0;
 	p.fovScale = 2.f;	// (only says "widen": the patch's own factor is fixed)

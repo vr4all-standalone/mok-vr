@@ -1,206 +1,105 @@
-<div align="center">
+<p align="center">
+  <img src="hotd2-vr/assets/mok-banner.png" alt="The Maze of the Kings VR — standalone Meta Quest and PC VR" width="100%" />
+</p>
 
-<img src="hotd2-vr/assets/readme-banner.jpg" alt="Lupin the Third VR — experimental Quest and PC VR port" width="100%" />
-
-# Lupin the Third VR
-### Sega NAOMI Light-Gun Adventure · Standalone Meta Quest & PC VR
-
-[![Release v1.0.2](https://img.shields.io/badge/Release-v1.0.2_Experimental-d44c65?style=for-the-badge)](../../releases)
-[![Quest and PC VR](https://img.shields.io/badge/Headset-Quest_%C2%B7_PC_VR_OpenXR-blue?style=for-the-badge)](#installation)
-[![Original game required](https://img.shields.io/badge/Your_Game-lupinshoo_GDS--0018-orange?style=for-the-badge)](#what-you-need)
-
-**[⬇️ Quest APK](../../releases/latest/download/lupin-the-third-vr-quest.apk)** · **[🖥️ PC VR ZIP](../../releases/latest/download/lupin-the-third-vr-pcvr.zip)** · **[🎮 Controls](#controls)**
-
-**[🌐 VR4ALL — Standalone VR Mod Installer](https://github.com/vr4all-standalone/vr4all-standalone-vr-mod-installer)**
-
-</div>
-
----
+<h1 align="center">The Maze of the Kings VR</h1>
+<p align="center"><strong>The original NAOMI adventure, inside your headset.</strong><br>Standalone Meta Quest · Windows PC VR</p>
+<p align="center">
+  <img alt="Release" src="https://img.shields.io/github/v/release/vr4all-standalone/mok-vr?style=for-the-badge&amp;color=d6b15a" />
+  <img alt="Platform" src="https://img.shields.io/badge/Quest_%2B_PC_VR-OpenXR-54c7ba?style=for-the-badge" />
+  <img alt="Your game required" src="https://img.shields.io/badge/Your_Game-MAME_mok-orange?style=for-the-badge" />
+</p>
+<p align="center">
+  <a href="https://github.com/vr4all-standalone/mok-vr/releases/latest/download/mok-vr-quest.apk"><strong>Download Quest APK</strong></a> ·
+  <a href="https://github.com/vr4all-standalone/mok-vr/releases/latest/download/mok-vr-pcvr.zip"><strong>Download PC VR ZIP</strong></a> ·
+  <a href="https://github.com/vr4all-standalone/mok-vr/releases/latest/download/SHA256SUMS.txt">Checksums</a> ·
+  <a href="https://github.com/vr4all-standalone/mok-vr/releases">All releases</a>
+</p>
 
 ## Overview
 
-**Lupin the Third VR** brings **Lupin the Third: The Shooting** to a standalone Meta Quest
-or a PC VR headset. The original NAOMI game runs in Flycast; its scenes are reconstructed
-in stereo around you, and your tracked controllers become the light guns.
+The Maze of the Kings for standalone Meta Quest and Windows PC VR, built on mikermak's [HOTD2 VR](https://github.com/mikermak/hotd2-vr), [Flycast](https://github.com/flyinghead/flycast), and the shared Confidential Mission and Lupin VR adaptations. This standalone edition keeps MOK's existing measured camera and staff extractor and adds the common paused menu, current hand controls, separate setup and releases.
 
-It carries over the menus and features of **[Confidential Mission VR](https://github.com/vr4all-standalone/confidential-mission-vr)**,
-using Lupin's own measured camera, aiming calibration, player state and extracted handgun.
-Both projects build on **[mikermak's VR fork of Flycast](https://github.com/mikermak/hotd2-vr)**,
-itself based on **[Flycast](https://github.com/flyinghead/flycast)**.
+**No game is included.** Bring your own `mok.zip`, its matching GDS-0022 disc and a supported NAOMI BIOS. The app generates its staff on your device from your files. Unofficial fan project; not affiliated with Sega, Hitmaker, Meta or the Flycast project. The banner is an original promotional illustration, not a gameplay screenshot.
 
-> **No game included.** You need your own original **GDS-0018** game and NAOMI BIOS.
-> This is an unofficial fan project, not affiliated with Sega, Meta, the Lupin rights
-> holders or the Flycast project. No ROM, disc, PIC, game graphics or sound is supplied.
+**Experimental:** automated checks and desktop XR simulator evidence are recorded in [validation](hotd2-vr/notes/mok-validation.md). Physical headset tracking, comfort, sustained performance and full later-stage coverage remain pending.
 
-**Status: experimental.** Windows and Quest builds, simulator gameplay, aiming, menus
-and reload checks pass. **This Lupin port has not been tested on a physical headset.**
-Tracking, comfort, sustained performance and later stages still need hands-on validation.
+## Features
 
-## Key VR Features
+- Stereo reconstruction with tracked head movement and controller aiming.
+- MOK's guarded wider-view camera patch; shots still use the original game framing.
+- Automatic first-launch preparation of the original hero's **staff**, with cache reuse and damaged-cache recovery. B/Y skips it for this session; the next launch retries.
+- **Gun** menu: In-game staff, Arcade gun, Zapper and your own compatible GLB models.
+- One headset, two players: default **P1 left / P2 right**, reversible in the **Two players** menu.
+- Solo play: a fresh trigger pull transfers the weapon to either hand.
+- Paused settings with recenter, gun angle, reload mode, laser, haptics, world size, panel distance, wider view, How to play and confirmed Quit.
+- Separate Android package `com.vrlightgunhub.mok`, settings and saves. Installs alongside HOTD2, Confidential Mission, Lupin, Ninja Assault and Death Crimson OX VR.
 
-- **Stereo 3D and tracked viewing.** Move and turn your head inside reconstructed scenes.
-  Wider view draws extra scenery while preserving the original game's hit-test lens.
-  HUD, subtitles and instructions sit on a panel in front of you.
-- **Your controller is the light gun.** Choose the handgun extracted from your own game,
-  the Arcade gun, the Zapper, or your own GLB. Gun angle adjusts from **−30° to +30°**.
-- **Feedback matches real rounds.** Recoil, muzzle flash and haptics happen when the game
-  fires. Empty magazines give a click without a firing kick. Haptics offers
-  **Off, Light, Medium and Strong**.
-- **Two players on one headset.** P2 joins with the other controller, with a separate gun,
-  magazine, lives and score. **Two players** defaults to **P1 left / P2 right** and applies only while both players are active.
-- **Two reload modes.** Shoot away from the view, or just point away once per exit.
-  **B/Y** reload too. P1 has seven rounds; P2 has six.
-- **Empty hands in story scenes.** Guns, controllers and lasers disappear during
-  noninteractive movies and return when play resumes.
-- **A paused menu in the headset.** Choose guns, angle, reload, hands, laser, haptics,
-  world size, panel distance and wider view. Settings save immediately. How to play
-  shows labelled controllers, and Quit needs a second selection.
-- **A start screen that checks your files.** See READY or which file needs attention
-  before Play enables. Separate app identity, settings and saves let it coexist with CM.
+## Your game files
 
-<a id="installation"></a>
-## Installation on Meta Quest
+Use the MAME **mok** set and matching **GDS-0022** disc. Keep the ZIP packed and use lowercase paths:
 
-Quest 3 is the primary target. Quest 3S, Quest 2, Quest Pro and PC VR are inherited
-compatibility targets; physical validation is pending for this Lupin port.
-
-<a id="what-you-need"></a>
-### What you need
-
-Use the **original GDS-0018**, MAME/Flycast set **`lupinshoo`**.
-**Rev A (`lupinsho`, `gds-0018a`) is not supported.** Renaming a Rev A disc does not turn
-it into the original revision.
-
-| File | Where it goes on the Quest |
-| :--- | :--- |
-| `lupinshoo.zip`, with `317-0325-jpn.pic` inside | `Download/lupinshoo.zip` — keep it packed |
-| Original `gds-0018.chd` | `Download/lupinshoo/gds-0018.chd` |
-| `naomi.zip` | `Download/naomi.zip`, unless a supported BIOS is already inside the game ZIP |
-
-The app checks the CHD header against the original revision. Its combined header SHA-1 is
-`3b7d5dd917b9a2cc9b7b51aad22f8e75383c3301`. These are structural/header checks, not a scan
-of every game byte. Keep the canonical lowercase paths.
-
-### 1. Enable developer mode
-
-Enable developer mode for your Quest in the Meta Horizon app and connect it to your PC by USB.
-Allow USB debugging on the headset. If you already use VR4ALL or SideQuest, this may be set up.
-
-### 2. Install with VR4ALL
-
-**[Get VR4ALL](https://github.com/vr4all-standalone/vr4all-standalone-vr-mod-installer)**,
-open the latest build, select **Lupin the Third VR** and provide your own three files above.
-
-VR4ALL downloads the Quest APK, installs it, enables All files access and copies your
-files to the correct folders. It does not supply the game or BIOS.
-
-**Or by hand:** download the [Quest APK](../../releases/latest/download/lupin-the-third-vr-quest.apk)
-and install it with SideQuest, or ADB:
-
-```sh
-adb install -r lupin-the-third-vr-quest.apk
-adb shell appops set com.vrlightgunhub.lupin MANAGE_EXTERNAL_STORAGE allow
+```text
+Download/
+    mok.zip                   # contains 317-0333-com.pic
+    mok/
+        gds-0022.chd
+    naomi.zip                 # unless a supported BIOS is already inside mok.zip
 ```
 
-Copy your own files to the Download layout above. The app also recognizes complete
-original-named CUE/GDI sets with all tracks; **raw CUE/GDI boot remains untested**.
-The VR4ALL recipe uses CHD.
+The setup checks ZIP entry metadata, the 16 KiB PIC entry, a supported BIOS entry, and bounded CHD headers/maps. Supported CHD v3/v4/v5 identity: combined SHA1 `ddd6bf6a93f44f04199b278149ded19b26cdcab4`, v3 raw SHA1 `ba9d27a248d86218898d9bb5f1fe22fdefb8c03f`. These structural checks do not verify every compressed payload byte. A complete, correctly named GDI/CUE with its tracks is recognized; raw-disc boot remains untested. A wrong CHD cannot hide behind a valid descriptor.
 
-### 3. Play
+## Quest
 
-Open **Lupin the Third VR** under **Unknown sources**. Use **Allow** if it needs file access,
-**Look again** to rescan, then **Play** when READY. Quit from VR returns to this screen.
+1. Install `mok-vr-quest.apk` using VR4ALL, SideQuest or `adb install -r mok-vr-quest.apk`.
+2. Copy the files above into the headset's Download folder. VR4ALL copies them for you and enables All files access.
+3. Open **The Maze of the Kings VR** under Unknown Sources. Choose **Allow** if needed, then **Look again**. **Play** becomes available when its file checks pass.
+4. Let the one-time staff preparation finish, or press B/Y to skip. Later starts reuse the valid cache.
 
-First launch watches the attract demo to prepare a handgun from your own game.
-**B skips** preparation for that launch and uses the Arcade gun; a later launch retries.
-Completed caches are reused and incomplete caches regenerate. The captured model is the
-train guards' handgun, not a claim to be Lupin's personal Walther. No extracted game model
-comes with the release.
-
-Package: `com.vrlightgunhub.lupin`. Updates retain this app's settings and saves.
+The setup also checks the app's private `files/games` folders, which do not need shared-storage access. Direct file/ADB launches pass through the same media checks. Quest 3 is the primary target; physical testing on all supported Quest models remains pending.
 
 ## PC VR
 
-1. Download the [PC VR ZIP](../../releases/latest/download/lupin-the-third-vr-pcvr.zip) and unpack it.
-2. Add your own files beside `flycast.exe`:
+1. Extract `mok-vr-pcvr.zip` into its own folder.
+2. Create `roms` alongside `flycast.exe`. Add `roms/mok.zip`, `roms/mok/gds-0022.chd` and `roms/naomi.zip`.
+3. Connect your headset to the active OpenXR runtime, such as SteamVR, Quest Link or Virtual Desktop.
+4. Open **Play The Maze of the Kings.cmd**. This portable copy uses its own settings.
 
-   ```text
-   roms/
-       lupinshoo.zip
-       lupinshoo/gds-0018.chd
-       naomi.zip
-   ```
-
-3. Connect your headset to the active OpenXR runtime, such as SteamVR or Quest Link.
-4. Run **Play Lupin the Third.cmd**.
-
-The archive includes portable settings, licensed gun/controller models, credits and the
-software licence. It includes no game files. Physical PC VR headset use remains untested.
-
-<a id="controls"></a>
 ## Controls
 
-Solo controls on Quest Touch (the two-player layout is described below):
+| Action | Control |
+|---|---|
+| Aim / shoot | Controller pose / trigger |
+| Solo weapon hand | Fresh trigger pull on either controller |
+| P1 Start, solo | Right A |
+| Join P2, solo | Left X |
+| Start with two players | X for the left-hand player; A for the right-hand player |
+| Reload / native secondary input | B/Y; off-screen reload follows the chosen mode |
+| Settings | Left Menu |
+| Recenter | Left stick click |
+| Laser toggle | Right stick click |
+| Menu navigation / choose / back | Stick / A or X / B or Y |
 
-| Input | Action |
-| :--- | :--- |
-| Right A / B | P1 Start / P1 Reload |
-| Left X / Y | Join P2 / P1 Reload |
-| Trigger | Shoot; either hand can hold P1's single gun before P2 joins |
-| Left Menu | Open/close the paused settings menu |
-| Left stick click | Recenter |
-| Right stick click | Toggle laser |
-| Grip + stick up/down | World size |
-| Grip + stick left/right | Gun size |
-| Stick | Game D-pad |
+**Two players** changes the layout only when both players are active. It defaults to P1 left / P2 right; choose P1 right / P2 left to swap them. Solo trigger switching is independent of this setting. Held Start presses keep their original player ownership through joins, exits and swaps.
 
-**Two players** defaults to **P1 left / P2 right**. Solo play keeps A/B for P1 Start/Reload,
-and pulling either trigger moves the single gun to that hand. X joins P2; while both
-players are active, P1 uses the left gun and X/Y, and P2 uses the right gun and A/B.
-Choose P1 right / P2 left to reverse the assignment. Changing it swaps the dual guns after the menu
-closes; a held trigger waits for release. A held join button stays P2 Start until released.
-Touch, Index, Vive and WMR have their own labels and bindings. How to play shows them,
-with Trigger above Stick where present.
+The staff has no pistol slide. Shared effects and reload inputs are inherited; this port does not claim a newly measured MOK native magazine/accepted-shot model or automatic cutscene hand hiding.
 
-## The menu
+## Models and settings
 
-**Resume · Recenter · Gun · Gun angle · Reload · Two players · Laser · Haptics · World size ·
-Panel distance · Wider view · How to play · Quit**
+The generated `staff-mok.bin` lives in this app's writable data folder and is never distributed. **Menu → Gun → In-game staff** restores it after selecting another model. A corrupt or truncated cache is regenerated on the next start. Skipping preparation keeps the fallback for this session.
 
-Either hand can point and select; stick navigation and repeat work too. Game and audio
-pause while head tracking stays live. Menu pointers remain visible with Laser off.
-Quit needs a second selection within three seconds.
+Use `Download/guns` on Quest or `guns` next to the PC app for custom GLB guns and their sidecar metadata. Bundled models have their own licenses in `CREDITS.txt`. Settings live in `/sdcard/Android/data/com.vrlightgunhub.mok/files/emu.cfg` on Quest, or `emu.cfg` next to the PC app.
 
-## Bring your own models
+## Build and validation
 
-Add GLBs and matching JSON sidecars in `Download/guns/` or `Download/controllers/` on Quest.
-PC uses `guns/` and `controllers/` beside the player or game files. User models override
-matching bundled files, and controller sides fall back independently.
-[Model format and development notes](hotd2-vr/notes/lupin-development.md#user-models).
+Windows: Visual Studio 2022 C++ Build Tools, CMake and Ninja; run `hotd2-vr\build-win.cmd RelWithDebInfo ON`. Android: JDK 17, Android SDK 36.1, NDK 29 and CMake 3.22.1; set `JAVA_HOME`, `ANDROID_HOME`, `GRADLE_USER_HOME`, then run `hotd2-vr\build-quest.cmd --offline --max-workers=4`. The optimized VR build is arm64 only.
 
-## Known limits and testing
+`VR_STANDALONE_MOK=ON` restricts the loaded title to MOK; ordinary Flycast regression builds can leave it OFF. `hotd2-vr\package-release.ps1` requires a clean committed tree, the matching source revision in both binaries, a private release signer, correct Android identity and portable launcher, complete license notices, and archives without game files, extracted models or signing material. Version 1.0.0 uses Android versionCode 1 and versionName `1.0.0-g<commit>`.
 
-- Physical tracking, comfort, controller feel, sustained frame rate and compatibility remain
-  untested. Include your headset and build version when reporting a problem.
-- Extreme head movement can reveal black beyond geometry drawn by the original game camera.
-- Later stages, raw CUE/GDI boot and mixed P1-active/P2-continue timing need more testing.
+See [validation](hotd2-vr/notes/mok-validation.md) and the [headset checklist](hotd2-vr/notes/mok-headset-checklist.md). Packaging checks establish the contents and identity of the builds; simulator checks establish desktop behavior.
 
-[Validation evidence](hotd2-vr/notes/lupin-validation.md) ·
-[Headset checklist](hotd2-vr/notes/lupin-vr-headset-checklist.md) ·
-[Measured Lupin research](hotd2-vr/notes/lupin-findings.md) ·
-[Build and development notes](hotd2-vr/notes/lupin-development.md)
+## Credits and license
 
-## Credits and licence
+Flycast by flyinghead and contributors; HOTD2 VR and MOK camera/staff reconstruction by mikermak; shared standalone/menu work from the Confidential Mission and Lupin adaptations. The original game belongs to its respective rights holders. No ROM, BIOS, disc, key or extracted game asset is included in either release.
 
-- **Flycast** by flyinghead and contributors. **mikermak's VR fork** supplies the original
-  VR rendering, tools and model infrastructure. Links are in the overview above.
-- **Confidential Mission VR** provides the standalone setup, menus and reusable gun features.
-  Lupin adapts them to its original revision, camera, calibration and native game state.
-- Individual model authors, licences and transformations appear in the release's **CREDITS.txt**.
-- This software build is distributed under **GNU GPL version 3**; see [LICENSE-RELEASE.txt](LICENSE-RELEASE.txt). Upstream source notices retain their GPL-2.0-or-later terms.
-  Upstream notices and history are preserved. Original game and character rights remain
-  with their owners. The project title graphic contains no game screenshot or character art.
-
-The first release binaries were verified from **`00706171d`**. The release tag identifies
-that corresponding source; the project page on `main` may have newer documentation.
-Game data and release signing material are never included.
+Source is GPL-2.0-or-later. Distributed builds include GPL-3.0 and dependency notices in `LICENSE.txt`; compatible bundled models retain their individual credits and licenses. See [banner provenance](hotd2-vr/assets/mok-banner.md).
