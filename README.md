@@ -103,3 +103,15 @@ See [validation](hotd2-vr/notes/mok-validation.md) and the [headset checklist](h
 Flycast by flyinghead and contributors; HOTD2 VR and MOK camera/staff reconstruction by mikermak; shared standalone/menu work from the Confidential Mission and Lupin adaptations. The original game belongs to its respective rights holders. No ROM, BIOS, disc, key or extracted game asset is included in either release.
 
 Source is GPL-2.0-or-later. Distributed builds include GPL-3.0 and dependency notices in `LICENSE.txt`; compatible bundled models retain their individual credits and licenses. See [banner provenance](hotd2-vr/assets/mok-banner.md).
+
+## Quest Start and Service buttons
+
+Play can launch immersive VR from Quest Home in passthrough or a virtual home.
+After loading, tap and release **A** to start P1. **X** requests P2 where the game
+supports local two-player play, after P1 has started; the second gun appears only
+when the game accepts P2. In two-player mode, short Start presses follow the saved
+hand assignment. Survivor retains its native single-player controls.
+
+Hold the right controller's **A for 3 seconds** to open the arcade Service menu.
+A purple progress notice shows the hold. Releasing early acts as a normal Start;
+releasing after Service opens does not send Start. Service holds are offline only.
