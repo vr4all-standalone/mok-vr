@@ -123,6 +123,8 @@ bool gunState(int player, GunState& out);
 // The game asks for player 2 in its corner (its start prompt): player 2 isn't playing.
 // Seen in the last half second (when the game's profile knows the picture).
 bool player2Prompting();
+// Whether this profile supplies measured native membership (CM/Lupin; not MOK).
+bool playerStateSupported();
 // Native membership at the last VBlank; false while loading or unsupported.
 bool playerInGame(int player);
 // Guarded native code/state is ready for Start, including the inactive title screen.

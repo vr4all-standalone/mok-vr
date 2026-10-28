@@ -94,7 +94,7 @@ Use `Download/guns` on Quest or `guns` next to the PC app for custom GLB guns an
 
 Windows: Visual Studio 2022 C++ Build Tools, CMake and Ninja; run `hotd2-vr\build-win.cmd RelWithDebInfo ON`. Android: JDK 17, Android SDK 36.1, NDK 29 and CMake 3.22.1; set `JAVA_HOME`, `ANDROID_HOME`, `GRADLE_USER_HOME`, then run `hotd2-vr\build-quest.cmd --offline --max-workers=4`. The optimized VR build is arm64 only.
 
-`VR_STANDALONE_MOK=ON` restricts the loaded title to MOK; ordinary Flycast regression builds can leave it OFF. `hotd2-vr\package-release.ps1` requires a clean committed tree, the matching source revision in both binaries, a private release signer, correct Android identity and portable launcher, complete license notices, and archives without game files, extracted models or signing material. Version 1.0.0 uses Android versionCode 1 and versionName `1.0.0-g<commit>`.
+`VR_STANDALONE_MOK=ON` restricts the loaded title to MOK; ordinary Flycast regression builds can leave it OFF. `hotd2-vr\package-release.ps1` requires a clean committed tree, the matching source revision in both binaries, a private release signer, correct Android identity and portable launcher, complete license notices, and archives without game files, extracted models or signing material. Version 1.0.4 uses Android versionCode 5 and versionName `1.0.4-g<commit>`.
 
 See [validation](hotd2-vr/notes/mok-validation.md) and the [headset checklist](hotd2-vr/notes/mok-headset-checklist.md). Packaging checks establish the contents and identity of the builds; simulator checks establish desktop behavior.
 
@@ -108,7 +108,8 @@ Source is GPL-2.0-or-later. Distributed builds include GPL-3.0 and dependency no
 
 Play launches immersive VR from passthrough or a virtual Quest Home. After loading,
 **A** starts P1; **X** requests P2 where supported, after P1 has started. The second
-gun appears only after native P2 acceptance. Two-player Starts follow the saved hand
+gun follows MOK’s existing native prompt-based join/leave behavior. Profiles with measured
+player RAM keep native P2 acknowledgment. Two-player Starts follow the saved hand
 assignment. Survivor retains its native single-player controls.
 
 To enter Service, open the in-game VR menu and choose **Open Service Menu**, directly

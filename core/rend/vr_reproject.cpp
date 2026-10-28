@@ -932,6 +932,11 @@ bool gameStartReady()
 	return emu.running() && startInputReady.load();
 }
 
+bool playerStateSupported()
+{
+	return activeProfile != nullptr && (activeProfile->gunRam.playing != 0 || activeProfile->gunRam.floats);
+}
+
 bool playerInGame(int player)
 {
 	return player >= 0 && player < 2 && emu.running() && ((confirmedPlayers.load() >> player) & 1) != 0;
@@ -971,7 +976,10 @@ static void snapGuns(Event, void *)
 {
 	const GameProfile *prof = activeProfile;
 	u8 nativeMembership = 0;
-	bool nativeReady = false;
+	// MOK has no measured membership RAM. Its existing code guards identify a loaded
+	// game, whether its field-of-view patch is enabled or not. Keep loading blocked.
+	bool nativeReady = prof != nullptr && prof->model.kind == hands::Source::HerosStaff
+			&& prof->fovPatch[0].offset != 0 && profileCodeThere(*prof);
 	// CM's two-bit membership byte is valid only after its guarded code is loaded.
 	if (prof != nullptr && prof->gunRam.playing != 0 && profileCodeThere(*prof))
 	{

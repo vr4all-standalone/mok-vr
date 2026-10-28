@@ -28,6 +28,7 @@ bool triggerReleaseWait[2]{},startHeld[2]{};int startPlayer[2]{1,0},startOwner[2
 XrTime dualSince=0;struct {bool held=false;}slide;
 bool starts[2]{},skips[2]{},known=true,prompt=false;u32 lastP1=0,lastP2=0;int feedback=-1;
 bool boolAction(int action,int hand){return action==startAction?starts[hand]:skips[hand];}
+bool nativeSupported=true;bool playerStateSupported(){return nativeSupported;}
 bool playerInGame(int player){return player>=0 && player<2 && ((players>>player)&1)!=0;}
 bool player2PromptKnown(){return known;}bool player2Prompting(){return prompt;}
 void lightgunSet(int player,int,int,u32 buttons){if(player==1)lastP2=buttons;}void noteHolds(const char*){}void haptic(int hand,float,float){feedback=hand;}
@@ -45,7 +46,7 @@ bool menuCloseRequested=false;void close(){menuCloseRequested=true;}bool service
 int checks=0,failures=0;
 void check(bool ok,const char* what){++checks;if(!ok){++failures;std::fprintf(stderr,"FAIL %s\n",what);}}
 void layout(bool left){config::VrDualP1Left.value=config::VrSwapP1P2.value=left;config::VrTwoPlayerP1Hand.value=left?"left":"right";}
-void reset(bool left=true){settings.content.gameId="";serviceControls.reset();startRelease.reset();serviceRequest=serviceNextRequest=false;startSwallow=menuCloseRequested=false;p2JoinPending=false;players=1;autoAccept=true;menuOpen=false;guns[0]=Gun{0,Right};guns[1]=Gun{1,Left};dualWield=false;dualSince=0;p2StartWas=p2JoinHeld=startSwallow=skipSwallow=false;known=true;prompt=false;config::VrDualWield.value=true;config::GGPOEnable.value=false;feedback=-1;lastP1=lastP2=0;for(int h:{Left,Right}){starts[h]=skips[h]=triggerReleaseWait[h]=startHeld[h]=false;startOwner[h]=-1;startPlayer[h]=1-h;}layout(left);}
+void reset(bool left=true){nativeSupported=true;p1Armed=false;settings.content.gameId="";serviceControls.reset();startRelease.reset();serviceRequest=serviceNextRequest=false;startSwallow=menuCloseRequested=false;p2JoinPending=false;players=1;autoAccept=true;menuOpen=false;guns[0]=Gun{0,Right};guns[1]=Gun{1,Left};dualWield=false;dualSince=0;p2StartWas=p2JoinHeld=startSwallow=skipSwallow=false;known=true;prompt=false;config::VrDualWield.value=true;config::GGPOEnable.value=false;feedback=-1;lastP1=lastP2=0;for(int h:{Left,Right}){starts[h]=skips[h]=triggerReleaseWait[h]=startHeld[h]=false;startOwner[h]=-1;startPlayer[h]=1-h;}layout(left);}
 void frame(XrTime t=1'000'000'000LL,float left=0,float right=0,bool tl=true,bool tr=true){bool tracked[2]{tl,tr};float pulls[2]{left,right};frameCode(t,tracked,pulls,starts[Left],skips[Left]||skips[Right]);if(autoAccept && players==1 && (lastP2&4)){players=3;frameCode(t+1,tracked,pulls,starts[Left],skips[Left]||skips[Right]);}}
 int main(){
  gameReady=false;check(!serviceMenuAvailable(),"Service row waits for initial native game loading");gameReady=true;
@@ -206,6 +207,18 @@ int main(){
   check(native[0]==NAOMI_BTN0_KEY&&native[1]==0,"actual Ninja JVS descriptor maps Service A to only cabinet Enter");
   buttons[0]=NAOMI_DOWN_KEY;mapper.read_digital_in(buttons,native);
   check(native[0]==NAOMI_DOWN_KEY&&native[1]==0,"actual Ninja JVS descriptor preserves Service X Down");
+ }
+ for(bool left:{false,true}){
+  reset(left);nativeSupported=false;autoAccept=false;players=0;p1Armed=true;
+  starts[Left]=true;frame();
+  check(dualWield&&lastP2==4&&guns[0].hand==(left?Left:Right),"MOK joins with X and applies saved layout without nonexistent membership RAM");
+  starts[Left]=false;frame(1'200'000'000LL);prompt=true;frame(6'000'000'000LL);
+  check(!dualWield&&lastP2==0,"MOK returns to solo after its native P2 prompt reappears");
+  reset(left);nativeSupported=false;autoAccept=false;players=0;starts[Left]=true;frame();
+  check(!dualWield&&lastP2==0,"MOK does not join P2 before P1 takes Start");
+  p1Armed=true;frame(1'100'000'000LL);check(!dualWield,"X held before P1 Start must be released before MOK join");
+  starts[Left]=false;frame(1'200'000'000LL);starts[Left]=true;frame(1'300'000'000LL);
+  check(dualWield,"fresh X joins MOK after the loading/initial Start hold is released");
  }
  std::printf("%s %d production assignment checks (%d failures)\n",failures?"FAIL":"PASS",checks,failures);return failures?1:0;
 }

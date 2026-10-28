@@ -2308,8 +2308,10 @@ void updateLightgun(XrTime time)
 	// (GGPO): player 2 is the other player there and only this side's player 1 is sent, so
 	// there player 2's Start does nothing.
 	const bool canJoin = config::VrDualWield && !config::GGPOEnable && !serviceControls.active && player2PromptKnown();
-	// Loading presses are consumed. P2's gun waits for the native join acknowledgment.
-	if (canJoin && playerInGame(0) && tracked[Left] && tracked[Right]
+	const bool nativePlayers = playerStateSupported();
+	// Measured profiles wait for native membership. MOK retains its prompt-based path;
+	// missing membership data must not reject Start forever. Loading holds are consumed above.
+	if (canJoin && (nativePlayers ? playerInGame(0) : p1Armed) && tracked[Left] && tracked[Right]
 			&& p2Start && !p2StartWas && !dualWield)
 	{
 		p2JoinPending = true;
@@ -2320,7 +2322,7 @@ void updateLightgun(XrTime time)
 		p2JoinPending = false;
 		lightgunSet(1, OffScreen, OffScreen, 0);
 	}
-	if (canJoin && p2JoinPending && playerInGame(1) && !dualWield)
+	if (canJoin && p2JoinPending && (!nativePlayers || playerInGame(1)) && !dualWield)
 	{
 		p2JoinPending = false;
 		dualWield = true;
@@ -2343,7 +2345,9 @@ void updateLightgun(XrTime time)
 		noteHolds("player 2 joins");
 	}
 	p2StartWas = p2Start;
-	if (dualWield && (!config::VrDualWield || config::GGPOEnable || !playerInGame(1)))
+	const bool p2Out = nativePlayers ? !playerInGame(1)
+			: (time - dualSince > 4'000'000'000LL && player2Prompting());
+	if (dualWield && (!config::VrDualWield || config::GGPOEnable || p2Out))
 	{
 		dualWield = false;
 		lightgunSet(1, OffScreen, OffScreen, 0);

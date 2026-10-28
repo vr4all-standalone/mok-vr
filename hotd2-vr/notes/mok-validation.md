@@ -4,6 +4,8 @@ Standalone edition derived from shared-menu Lupin revision bcb7fb050. MOK's came
 
 ## Automated evidence
 
+Start regression (1.0.4): the 1.0.3 native-state gate never became ready for MOK, whose profile has no measured membership RAM. Five fresh right-A presses after loaded game code produced no native Start. Production readiness tests reproduced five failures; player-assignment tests reproduced four P2 failures. The corrected checks pass 21 readiness cases and 179 shared assignment/Service cases. MOK now uses its existing guarded game-code signature for Start and retains its established prompt-based P2 path. No MOK membership/ammo addresses are invented; loading-held, focus and menu release gates remain in place.
+
 - Native loaded-title policy: 9 checks in each of enabled, disabled and explicitly-zero policy modes, all pass.
 - Shared production settings/held-input functions: 132 checks pass. Preparation release gating adds 835 checks across all held-button combinations. The held Start/B leak was reproduced before the fix and is absent in the same simulator case afterward.
 - MOK reload/profile/rendering regression checks extract the production branches and draw commands. The original source fails the no-implicit-floor-reload and spare-hand checks; the corrected source passes. Native MOK transport, B/Y, point-mode arming and pistol/custom-model rendering are covered.
