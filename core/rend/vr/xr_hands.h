@@ -28,6 +28,7 @@ struct HandsModel
 	float travel;			// metres the slide goes back (+z); 0: no slide (the staff)
 	glm::mat4 onSlide;		// hand space -> gun space: the open hand racking the slide (at rest)
 	bool gunOnly = false;	// no hands (HND1 v2): the other hand keeps its controller
+	bool staff = false;		// native hero staff: magical firing effect instead of gun smoke/fire
 };
 
 // The running game's model, loaded on first use (again once another game starts); nullptr

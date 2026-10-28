@@ -94,7 +94,7 @@ Use `Download/guns` on Quest or `guns` next to the PC app for custom GLB guns an
 
 Windows: Visual Studio 2022 C++ Build Tools, CMake and Ninja; run `hotd2-vr\build-win.cmd RelWithDebInfo ON`. Android: JDK 17, Android SDK 36.1, NDK 29 and CMake 3.22.1; set `JAVA_HOME`, `ANDROID_HOME`, `GRADLE_USER_HOME`, then run `hotd2-vr\build-quest.cmd --offline --max-workers=4`. The optimized VR build is arm64 only.
 
-`VR_STANDALONE_MOK=ON` restricts the loaded title to MOK; ordinary Flycast regression builds can leave it OFF. `hotd2-vr\package-release.ps1` requires a clean committed tree, the matching source revision in both binaries, a private release signer, correct Android identity and portable launcher, complete license notices, and archives without game files, extracted models or signing material. Version 1.0.4 uses Android versionCode 5 and versionName `1.0.4-g<commit>`.
+`VR_STANDALONE_MOK=ON` restricts the loaded title to MOK; ordinary Flycast regression builds can leave it OFF. `hotd2-vr\package-release.ps1` requires a clean committed tree, the matching source revision in both binaries, a private release signer, correct Android identity and portable launcher, complete license notices, and archives without game files, extracted models or signing material. Version 1.0.5 uses Android versionCode 6 and versionName `1.0.5-g<commit>`. The native staff fires a brief emerald ripple and gold magical motes, with green illumination at its crystal tip; other gun models retain their existing effects.
 
 See [validation](hotd2-vr/notes/mok-validation.md) and the [headset checklist](hotd2-vr/notes/mok-headset-checklist.md). Packaging checks establish the contents and identity of the builds; simulator checks establish desktop behavior.
 

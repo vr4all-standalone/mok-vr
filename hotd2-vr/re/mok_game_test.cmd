@@ -38,6 +38,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\mok-reload-test.ps1
 if errorlevel 1 goto failed
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\mok-start-test.ps1"
 if errorlevel 1 goto failed
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\mok-magic-test.ps1"
+if errorlevel 1 goto failed
 popd
 exit /b 0
 :build_failed

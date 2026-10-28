@@ -96,7 +96,7 @@ struct GlowVertex
 };
 GLuint glowProgram;
 GLint gMvp = -1, gShape = -1, gStarAngle = -1;
-enum Shape { Line, Dot, Star, Flame, Smoke };
+enum Shape { Line, Dot, Star, Flame, Smoke, MagicRing, MagicMote };
 
 // Gun smoke: a few puffs left in the room at each shot, drifting up and fading.
 struct Puff
@@ -107,6 +107,16 @@ struct Puff
 	float size;
 };
 std::vector<Puff> smoke;
+// Room-space motes, one bounded burst per VR shot serial and player, shared by both eyes.
+struct MagicBurst
+{
+	glm::vec3 pos, forward;
+	double born;
+	float scale;
+	unsigned seed;
+	int player;
+};
+std::vector<MagicBurst> magicBursts;
 unsigned lastShot[2];		// per player
 
 // A cheap deterministic random number in 0..1 for shot n, stream k.
@@ -224,7 +234,7 @@ void main()
 )");
 	OpenGlSource fragment;
 	fragment.addSource(PixelCompatShader).addSource(R"(
-uniform lowp float shape;		// 0 line, 1 dot, 2 star burst, 3 flame, 4 smoke
+uniform lowp float shape;		// 0 line, 1 dot, 2 star, 3 flame, 4 smoke, 5 spell ring, 6 mote
 uniform highp float starAngle;
 in lowp vec4 vtx_color;
 in highp vec2 vtx_corner;
@@ -232,7 +242,11 @@ void main()
 {
 	mediump float a = vtx_color.a;
 	highp float r = length(vtx_corner);
-	if (shape > 3.5)
+	if (shape > 5.5)
+		a *= pow(max(0.0, 1.0 - abs(vtx_corner.x) - abs(vtx_corner.y)), 1.3); // tiny diamond of light
+	else if (shape > 4.5)
+		a *= 1.0 - smoothstep(0.05, 0.17, abs(r - 0.72)); // thin, soft magical ripple
+	else if (shape > 3.5)
 		a *= 1.0 - smoothstep(0.0, 1.0, r);			// soft round puff
 	else if (shape > 2.5)
 	{
@@ -373,6 +387,12 @@ float gunKick(float sinceShot)
 	return std::exp(-sinceShot / 0.06f) * std::cos(sinceShot * (6.2831853f / 0.22f));
 }
 
+static bool staffMagic(const GunView& gun)
+{
+	const HandsModel *model = handModel(gun.kind);
+	return !gun.menuPointer && model != nullptr && model->staff;
+}
+
 // Where the muzzle is as drawn (with the recoil), which way it points, and how bright its
 // flash is now: full for two headset frames, then gone in another 50 ms.
 static void muzzleNow(const GunView& gun, glm::vec3& muzzle, glm::vec3& forward, float& flash)
@@ -382,6 +402,42 @@ static void muzzleNow(const GunView& gun, glm::vec3& muzzle, glm::vec3& forward,
 	flash = gun.sinceShot < 0.f ? 0.f
 			: gun.sinceShot < 0.02f ? 1.f
 			: std::max(0.f, 1.f - (gun.sinceShot - 0.02f) / 0.05f);
+}
+
+// The brief ripple follows the crystal, while six golden motes fade in the room.
+static void addStaffMagic(const GunView& gun, const glm::vec3& muzzle, const glm::vec3& forward,
+		const glm::vec3& eyePos, std::vector<GlowVertex>& rings, std::vector<GlowVertex>& motes,
+		std::vector<GlowVertex>& cores)
+{
+	if (gun.menuPointer) return;
+	if (staffMagic(gun) && gun.sinceShot >= 0.f && gun.sinceShot < 0.16f)
+	{
+		const float t = gun.sinceShot / 0.16f;
+		const float fade = (1.f - t) * (1.f - t);
+		const glm::vec3 at = muzzle + forward * (0.015f * gun.scale);
+		billboard(rings, at, eyePos, (0.025f + 0.045f * t) * gun.scale, glm::vec4(0.10f, 0.95f, 0.48f, 0.85f * fade));
+		const float core = std::max(0.f, 1.f - gun.sinceShot / 0.09f);
+		billboard(cores, at, eyePos, 0.013f * gun.scale, glm::vec4(0.72f, 1.f, 0.82f, 0.75f * core));
+	}
+	for (const MagicBurst& burst : magicBursts)
+	{
+		const float age = (float)(gun.now - burst.born);
+		if (burst.player != (gun.player & 1) || age < 0.f || age >= 0.28f) continue;
+		const float t = age / 0.28f;
+		const float fade = (1.f - t) * (1.f - t);
+		glm::vec3 right = glm::cross(burst.forward, glm::vec3(0, 1, 0));
+		right = glm::length(right) < 1e-5f ? glm::vec3(1, 0, 0) : glm::normalize(right);
+		const glm::vec3 up = glm::cross(right, burst.forward);
+		for (unsigned k = 0; k < 6; ++k)
+		{
+			const float angle = 6.2831853f * shotRandom(burst.seed, k + 11);
+			const float speed = 0.16f + 0.12f * shotRandom(burst.seed, k + 21);
+			const glm::vec3 radial = right * std::cos(angle) + up * std::sin(angle);
+			const glm::vec3 at = burst.pos + (radial * (0.008f + speed * age) + burst.forward * (0.10f * age)) * burst.scale;
+			const float size = (0.003f + 0.002f * shotRandom(burst.seed, k + 31)) * burst.scale;
+			billboard(motes, at, eyePos, size, glm::vec4(1.f, 0.78f, 0.22f, 0.9f * fade));
+		}
+	}
 }
 
 void drawGunModel(const glm::mat4& viewProj, const glm::vec3& eyePos, const GunView& gun, bool clearDepth, const glm::vec3& tint)
@@ -413,7 +469,7 @@ void drawGunModel(const glm::mat4& viewProj, const glm::vec3& eyePos, const GunV
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	GlVertexArray::unbind();
 
-	const glm::vec4 muzzleLight(muzzle + forward * (0.02f * g), flash * 1.4f);
+	const glm::vec4 muzzleLight(muzzle + forward * (0.02f * g), flash * (staffMagic(gun) ? 0.75f : 1.4f));
 	if (game)
 	{
 		HandsView hands;
@@ -439,14 +495,20 @@ void drawGunGlow(const glm::mat4& viewProj, const glm::vec3& eyePos, const GunVi
 	muzzleNow(gun, muzzle, forward, flash);
 	const float g = gun.scale;
 
-	// A new shot leaves smoke at the muzzle, drifting out of the barrel and upward.
+	const bool magic = staffMagic(gun);
+	// A fresh staff shot releases magic; other guns keep their smoke and flash.
 	unsigned& shotWas = lastShot[gun.player & 1];
 	if (gun.shot != shotWas)
 	{
 		shotWas = gun.shot;
+		if (magic && gun.sinceShot >= 0.f && gun.sinceShot < 0.1f)
+		{
+			magicBursts.push_back({muzzle + forward * (0.015f * g), forward, gun.now, g, gun.shot, gun.player & 1});
+			if (magicBursts.size() > 24) magicBursts.erase(magicBursts.begin());
+		}
 		// out of the barrel as it settles (the drawn gun is still kicked up now)
 		const glm::vec3 muzzle = gun.restMuzzle, forward = gun.restForward;
-		for (unsigned k = 0; gun.sinceShot < 0.1f && k < 3; k++)
+		for (unsigned k = 0; !magic && !gun.menuPointer && gun.sinceShot >= 0.f && gun.sinceShot < 0.1f && k < 3; k++)
 		{
 			const float spread = shotRandom(gun.shot, k) - 0.5f;
 			const glm::vec3 up(0.f, 1.f, 0.f);
@@ -457,17 +519,22 @@ void drawGunGlow(const glm::mat4& viewProj, const glm::vec3& eyePos, const GunVi
 		if (smoke.size() > 36)
 			smoke.erase(smoke.begin(), smoke.begin() + (smoke.size() - 36));
 	}
+	magicBursts.erase(std::remove_if(magicBursts.begin(), magicBursts.end(), [&](const MagicBurst& p) { return gun.now - p.born >= 0.28; }), magicBursts.end());
 	if (withSmoke)
 		smoke.erase(std::remove_if(smoke.begin(), smoke.end(), [&](const Puff& p) { return gun.now - p.born > 0.9; }), smoke.end());
 
 	// Glowing bits, in room space, on top. Smoke and the aim line are hidden by the guns
 	// where they pass behind them; the muzzle flash and the aim dot always show.
-	static std::vector<GlowVertex> line, smokeVerts, flames, stars, dots;
+	static std::vector<GlowVertex> line, smokeVerts, flames, stars, dots, rings, motes, cores;
 	line.clear();
 	smokeVerts.clear();
 	flames.clear();
 	stars.clear();
 	dots.clear();
+	rings.clear();
+	motes.clear();
+	cores.clear();
+	addStaffMagic(gun, muzzle, forward, eyePos, rings, motes, cores);
 	if (gun.aimLine)
 	{
 		const glm::vec3 dir = gun.aimPoint - muzzle;
@@ -498,7 +565,7 @@ void drawGunGlow(const glm::mat4& viewProj, const glm::vec3& eyePos, const GunVi
 			const float alpha = 0.22f * std::min(1.f, age / 0.06f) * (1.f - t) * (1.f - t);
 			billboard(smokeVerts, at, eyePos, p.size * (1.f + 3.5f * t), glm::vec4(0.62f, 0.6f, 0.58f, alpha));
 		}
-	if (flash > 0.f)
+	if (!magic && !gun.menuPointer && flash > 0.f)
 	{
 		// a tongue of fire out of the barrel, and a star burst with a white-hot core
 		const float reach = (0.07f + 0.06f * shotRandom(gun.shot, 7)) * g;
@@ -542,6 +609,9 @@ void drawGunGlow(const glm::mat4& viewProj, const glm::vec3& eyePos, const GunVi
 	glcache.Disable(GL_DEPTH_TEST);
 	drawGlowShape(Flame, flames);
 	drawGlowShape(Star, stars);
+	drawGlowShape(MagicRing, rings);
+	drawGlowShape(MagicMote, motes);
+	drawGlowShape(Dot, cores);
 	drawGlowShape(Dot, dots);
 	glcache.DepthMask(GL_TRUE);
 	glcache.Disable(GL_BLEND);
@@ -567,6 +637,7 @@ void termGun()
 	mMvp = mModel = mEye = mColor = mSpecular = mShininess = mEmissive = mLight = -1;
 	gMvp = gShape = gStarAngle = -1;
 	smoke.clear();
+	magicBursts.clear();
 	lastShot[0] = lastShot[1] = 0;
 	termHands();
 }

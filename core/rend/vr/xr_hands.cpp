@@ -127,7 +127,7 @@ std::vector<std::unique_ptr<OwnGun>> ownGuns;
 unsigned ownGeneration;		// own::gunsGeneration() they were scanned at
 
 GLuint program;
-GLint uMvp = -1, uModel = -1, uEye = -1, uSpecular = -1, uShininess = -1, uAlphaTest = -1, uLight = -1, uTex = -1;
+GLint uMvp = -1, uModel = -1, uEye = -1, uSpecular = -1, uShininess = -1, uAlphaTest = -1, uLight = -1, uLightColor = -1, uTex = -1;
 
 // A model's file into `model`; false without one it can read (`missing`: no file at all).
 bool load(Model& model, std::string path, const std::string& legacy, bool& missing)
@@ -225,6 +225,7 @@ bool load(Model& model, std::string path, const std::string& legacy, bool& missi
 	}
 	const hands::Source *source = gameModelSource();
 	model.staff = source != nullptr && source->kind == hands::Source::HerosStaff;
+	model.info.staff = model.staff;
 	NOTICE_LOG(RENDERER, "XR: the game's own model from %s (%zu textures, %zu vertices%s%s)", path.c_str(),
 			model.textures.size(), model.vertices.size() / VertexSize, model.info.travel > 0.f ? "" : ", no slide",
 			!model.info.gunOnly ? "" : (flags & 2) ? ", gun only" : ", gun only, not all of it");
@@ -266,6 +267,7 @@ uniform mediump float specular;
 uniform mediump float shininess;
 uniform lowp float alphaTest;
 uniform highp vec4 muzzleLight;	// room position, strength
+uniform lowp vec3 muzzleColor;
 in highp vec3 vtx_pos;
 in highp vec3 vtx_normal;
 in highp vec2 vtx_uv;
@@ -293,7 +295,7 @@ void main()
 		highp vec3 toFlash = muzzleLight.xyz - vtx_pos;
 		highp float fd = length(toFlash);
 		mediump float lit = muzzleLight.w * max(dot(n, toFlash / fd), 0.15) / (1.0 + fd * fd * 600.0);
-		color += (base.rgb * 2.2 + 0.2) * vec3(1.0, 0.62, 0.28) * lit;
+		color += (base.rgb * 2.2 + 0.2) * muzzleColor * lit;
 	}
 	gl_FragColor = vec4(color, 1.0);
 }
@@ -308,6 +310,7 @@ void main()
 	uShininess = glGetUniformLocation(program, "shininess");
 	uAlphaTest = glGetUniformLocation(program, "alphaTest");
 	uLight = glGetUniformLocation(program, "muzzleLight");
+	uLightColor = glGetUniformLocation(program, "muzzleColor");
 	uTex = glGetUniformLocation(program, "tex");
 	return true;
 }
@@ -855,6 +858,8 @@ void drawHands(const glm::mat4& viewProj, const glm::vec3& eyePos, const HandsVi
 	glcache.UseProgram(program);
 	glUniform3f(uEye, eyePos.x, eyePos.y, eyePos.z);
 	glUniform4f(uLight, view.muzzleLight.x, view.muzzleLight.y, view.muzzleLight.z, view.muzzleLight.w);
+	const glm::vec3 lightColor = model.staff ? glm::vec3(0.12f, 1.f, 0.5f) : glm::vec3(1.f, 0.62f, 0.28f);
+	glUniform3f(uLightColor, lightColor.r, lightColor.g, lightColor.b);
 	glUniform1i(uTex, 0);
 	glActiveTexture(GL_TEXTURE0);
 	bindVertexArray(model.vao);
@@ -889,7 +894,7 @@ void termHands()
 	// (their vertices and textures dropped once uploaded: read again from the file when next chosen)
 	for (auto& gun : ownGuns)
 		unloadOwn(*gun);
-	uMvp = uModel = uEye = uSpecular = uShininess = uAlphaTest = uLight = uTex = -1;
+	uMvp = uModel = uEye = uSpecular = uShininess = uAlphaTest = uLight = uLightColor = uTex = -1;
 }
 
 }
