@@ -25,7 +25,7 @@ $floor=[regex]::Match($hostSource,'(?s)(?:const hands::Source \*reloadSource = g
 if(-not $floor.Success){throw 'Missing production floor reload branch'}
 $begin=$hostSource.IndexOf('if (config::VrReload == 1 && holds(g.hand)')
 $point=$hostSource.Substring($begin,$hostSource.IndexOf('// Seen but outside',$begin)-$begin)
-$source="constexpr bool mokSensorReload=$flag;"+"`nvoid render(Model& model,const View& view) {`n"+$draw+"`n}`nvoid floorReload(Gun& g,bool slide,bool live,glm::vec3 d) {`n"+$floor.Value+"`n}`nvoid pointReload(Gun& g) {`n"+$point+"`n}"
+$source="constexpr bool mokSensorReload=$flag;"+"`nvoid render(Model& model,const View& view) {`n// Native staff-only fixture: Arcade material override is disabled.`nconst glm::vec4 arcadeBase(0.f);`n"+$draw+"`n}`nvoid floorReload(Gun& g,bool slide,bool live,glm::vec3 d) {`n"+$floor.Value+"`n}`nvoid pointReload(Gun& g) {`n"+$point+"`n}"
 [IO.File]::WriteAllText((Join-Path $out 'mok_reload_under_test.inc'),$source,[Text.UTF8Encoding]::new($false))
 $vswhere=Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
 $vsroot=& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath

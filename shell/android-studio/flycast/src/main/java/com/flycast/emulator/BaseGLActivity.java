@@ -242,6 +242,7 @@ public abstract class BaseGLActivity extends Activity implements ActivityCompat.
     {
         activity.runOnUiThread(() -> {
             Intent panel = new Intent(activity.getApplicationContext(), MokStartActivity.class);
+            panel.putExtra(MokStartActivity.EXTRA_SUPPRESS_AUTO_START, true);
             panel.setAction(Intent.ACTION_MAIN);
             panel.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {

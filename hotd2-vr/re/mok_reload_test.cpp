@@ -12,7 +12,7 @@ enum { MeshFrame,MeshSlide,MeshGunHand,MeshOpenHand };
 struct Model { bool staff; };
 struct View { glm::mat4 gunPose{1.f},handPose{1.f}; float slide=0; bool otherHand=true; };
 glm::mat4 viewProj{1.f}; std::vector<int> drawn;
-void drawMesh(Model&,int mesh,const glm::mat4&,const glm::mat4&,float,float){drawn.push_back(mesh);}
+void drawMesh(Model&,int mesh,const glm::mat4&,const glm::mat4&,float,float,const glm::vec4& = glm::vec4(0.f)){drawn.push_back(mesh);}
 enum class Holds { Gun,Controller }; Holds held=Holds::Gun;
 Holds holds(int){return held;}
 struct Gun { int hand=1,player=0; bool pointedDown=false,offArmed=false,gunRam=false,gunKnown=false; long long reloadAt=0; struct {int ammo=0,magazine=7;}gunWas; };

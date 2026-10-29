@@ -16,6 +16,10 @@
   <a href="https://github.com/vr4all-standalone/mok-vr/releases">All releases</a>
 </p>
 
+## Update v1.0.6
+
+Validated automatic entry, full P1 red/P2 blue Arcade body and grip with grey details preserved, and a new gun-angle zero matching the old -10 degree pose. Legacy angles reset once; later adjustments persist. [Release notes](docs/releases/v1.0.6.md).
+
 ## Overview
 
 The Maze of the Kings for standalone Meta Quest and Windows PC VR, built on mikermak's [HOTD2 VR](https://github.com/mikermak/hotd2-vr), [Flycast](https://github.com/flyinghead/flycast), and the shared Confidential Mission and Lupin VR adaptations. This standalone edition keeps MOK's existing measured camera and staff extractor and adds the common paused menu, current hand controls, separate setup and releases.
