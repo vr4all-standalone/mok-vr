@@ -16,9 +16,9 @@
   <a href="https://github.com/vr4all-standalone/mok-vr/releases">All releases</a>
 </p>
 
-## Update v1.0.6
+## Update v1.0.7
 
-Validated automatic entry, full P1 red/P2 blue Arcade body and grip with grey details preserved, and a new gun-angle zero matching the old -10 degree pose. Legacy angles reset once; later adjustments persist. [Release notes](docs/releases/v1.0.6.md).
+Validated automatic entry, full P1 red/P2 blue Arcade body and grip with grey details preserved, and a new gun-angle zero matching the old -10 degree pose. Legacy angles reset once; later adjustments persist. [Release notes](docs/releases/v1.0.7.md).
 
 ## Overview
 
