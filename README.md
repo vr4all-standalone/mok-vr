@@ -5,7 +5,6 @@
 <h1 align="center">The Maze of the Kings VR</h1>
 <p align="center"><strong>The original NAOMI adventure, inside your headset.</strong><br>Standalone Meta Quest · Windows PC VR</p>
 
-<p align="center"><a href="https://ko-fi.com/vr4all">☕ Donate to VR4ALL</a></p>
 <p align="center">
   <img alt="Release" src="https://img.shields.io/github/v/release/vr4all-standalone/mok-vr?style=for-the-badge&amp;color=d6b15a" />
   <img alt="Platform" src="https://img.shields.io/badge/Quest_%2B_PC_VR-OpenXR-54c7ba?style=for-the-badge" />
@@ -17,6 +16,9 @@
   <a href="https://github.com/vr4all-standalone/mok-vr/releases/latest/download/SHA256SUMS.txt">Checksums</a> ·
   <a href="https://github.com/vr4all-standalone/mok-vr/releases">All releases</a>
 </p>
+
+<p align="center"><a href="https://github.com/vr4all-standalone/vr4all-standalone">🌐 VR4ALL — Standalone VR Mod Installer</a></p>
+<p align="center"><a href="https://ko-fi.com/vr4all">☕ Donate to VR4ALL</a></p>
 
 ## Update v1.0.7
 
