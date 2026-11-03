@@ -13,7 +13,7 @@ fun gitVersionName(): String {
 
 // hotd2-vr: The Maze of the Kings VR's own version. The vr build's versionName is "<hubVersion>-g<commit>"
 // (set in androidComponents below); the standalone release starts at versionCode 1.
-val hubVersion = "1.0.6"
+val hubVersion = "1.0.8"
 
 fun gitShortHash(): String {
     return providers.exec {
@@ -240,7 +240,7 @@ androidComponents {
         variant.applicationId.set("com.vrlightgunhub.mok")
         variant.outputs.forEach {
             it.versionName.set("$hubVersion-g${gitShortHash()}")
-            it.versionCode.set(7)
+            it.versionCode.set(9)
         }
         val licence = tasks.register<LicenceText>("${variant.name}LicenceText") {
             gpl3.set(file("../../../core/deps/picotcp/LICENSE.GPLv3"))

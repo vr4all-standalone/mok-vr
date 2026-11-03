@@ -5,6 +5,10 @@
 #include <cmath>
 #include <cstdio>
 #include <vector>
+#include "reticle_settings.h"
+#include "custom_reticle.h"
+#include "laser_settings.h"
+namespace config {int VrReticleMode=1,VrLaserWidth=1;float VrReticleMinSize=.25f,VrReticleMaxSize=1.f,VrReticleShrinkDistance=6.f;}
 enum class GunKind {Arcade,Pistol,Rifle,Custom};
 struct HandsModel {glm::vec3 muzzle{0.f,0.f,-.75f};bool staff=true;}nativeModel,customModel{{0,.05f,-.14f},false};
 bool nativeLoaded=true;
@@ -55,7 +59,7 @@ int main(){
  reset();staff.menuPointer=false;staff.shot=0;staff.now=3;staff.sinceShot=1e9f;draw(staff);
  check(smoke.empty()&&magicCount()==0,"idle or reload without a shot produces no magic");
  staff.aimLine=staff.aimDot=true;staff.aimPoint={0,0,-3};draw(staff);
- check(!recorded[Line].empty()&&!recorded[Dot].empty(),"staff laser and aim dot remain available");staff.aimLine=staff.aimDot=false;
+ check(recorded[Line].size()>=78&&recorded[Dot].empty(),"staff laser and hollow custom reticle remain available"); config::VrReticleMode=2;draw(staff);check(recorded[Line].size()==6&&recorded[Dot].empty(),"None keeps staff beam while removing its endpoint");staff.menuPointer=true;draw(staff);check(!recorded[Dot].empty(),"None preserves staff menu pointer");staff.menuPointer=false;config::VrReticleMode=1;staff.aimLine=staff.aimDot=false;
  reset();size_t worst=0;
  for(unsigned shot=1;shot<501;shot++){
   staff.shot=shot;staff.now=4+shot*.002;staff.sinceShot=.01f;staff.player=shot&1;draw(staff);

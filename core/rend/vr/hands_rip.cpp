@@ -86,7 +86,7 @@ constexpr size_t CmMaxCaptures = 1200;	// 20 s of passes (about 15 kB each)
 
 enum State { Off, Watching, Preparing };
 std::atomic<int> state { Off };
-std::atomic<bool> newModel, skipRequested;
+std::atomic<bool> newModel, skipRequested, staffRequired;
 std::atomic<float> progress;
 std::atomic<bool> staffRun;	// the run is for the hero's staff
 std::atomic<bool> cmRun;	// ...for Confidential Mission's guns
@@ -207,11 +207,13 @@ void onStart()
 	// a new game: whatever model the renderer has is another game's
 	newModel = true;
 	const Source *source = gameModelSource();
-	if (source == nullptr || !config::VrGameHands)
+	staffRequired = source != nullptr && source->kind == Source::HerosStaff && xr::enabled();
+	if (source == nullptr || (!config::VrGameHands && !staffRequired))
 		return;
 	cmRun = source->kind == Source::CmGuns;
 	lupinRun = source->kind == Source::LupinGun;
 	const bool watchOnly = haveModel();
+	if (watchOnly) staffRequired = false;
 	if (watchOnly)
 	{
 		NOTICE_LOG(RENDERER, "VR hands: %s, made before: %s", source->name(),
@@ -257,7 +259,7 @@ void onStart()
 	// The run: in the headset, or on the PC when asked (vr.HandsPrep, for testing; the OpenXR
 	// simulator counts as the PC). Never online: it presses Start for this side's player in the
 	// shared game (watching for the scene in play still makes the model when it comes by).
-	if ((!xr::enabled() || xr::sim::active()) && !config::VrHandsPrep)
+	if (!staffRequired && (!xr::enabled() || xr::sim::active()) && !config::VrHandsPrep)
 		return;
 	if (config::GGPOEnable)
 	{
@@ -288,7 +290,7 @@ void onVBlank()
 {
 	if (state != Preparing)
 		return;
-	if (skipRequested)
+	if (skipRequested && !staffRequired)
 	{
 		// Confidential Mission (S23): skipped is skipped for the session, no gun made by watching
 		// play either (the reload tutorial comes right after Start), so the arcade gun stays and
@@ -901,13 +903,14 @@ void observePass(const rend_context& ctx, const RenderPass& pass, const RenderPa
 			WARN_LOG(RENDERER, "VR hands: the game over scene, but %s", error.c_str());
 		return;
 	}
-	if (!save(model, modelPath()))
+	if ((staff && !validateStaffCache(model)) || !save(model, modelPath()))
 	{
 		failedAt = passes;
 		WARN_LOG(RENDERER, "VR hands: can't write %s", modelPath().c_str());
 		return;
 	}
 	NOTICE_LOG(RENDERER, "VR hands: %s from this game, %zu bytes to %s", source->name(), model.size(), modelPath().c_str());
+	if (staff) staffRequired = false;
 	progress = 1.f;
 	stopPrep("done");
 	state = Off;
@@ -921,6 +924,8 @@ bool takeNewModel() {
 bool preparing() {
 	return state == Preparing;
 }
+
+bool staffPrepRequired() { return xr::enabled() && staffRequired; }
 
 float prepProgress() {
 	return progress;

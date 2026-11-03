@@ -19,7 +19,7 @@ $end=$source.IndexOf('// A cheap deterministic random number',$begin)
 $types=@((Block $source 'struct GlowVertex')+';',[regex]::Match($source,'enum Shape \{[^}]+\};').Value,(Block $header 'struct GunView')+';',$source.Substring($begin,$end-$begin))
 [IO.File]::WriteAllText((Join-Path $out 'magic_types.inc'),($types -join "`n"),[Text.UTF8Encoding]::new($false))
 $functions=@()
-foreach($signature in @('float shotRandom(','void billboard(','void flame(','glm::vec3 gunMuzzle(','static bool staffMagic(','static void muzzleNow(','static void addStaffMagic(','void drawGunGlow(','void termGun()')){
+foreach($signature in @('float shotRandom(','void billboard(','void flame(','glm::vec3 gunMuzzle(','static bool staffMagic(','static void muzzleNow(','static void addStaffMagic(','void customReticle(','void drawGunGlow(','void termGun()')){
  if($source.Contains($signature)){$functions+=Block $source $signature}
 }
 $functions+='size_t magicCount(){return '+$(if($source.Contains('std::vector<MagicBurst> magicBursts')){'magicBursts.size()'}else{'0'})+';}'
@@ -30,7 +30,7 @@ $vcvars=Join-Path $vs 'VC/Auxiliary/Build/vcvars64.bat'
 $cpp=Join-Path $PSScriptRoot 're/mok_magic_test.cpp';$exe=Join-Path $out 'mok_magic_test.exe';$log=Join-Path $out 'build.log'
 Push-Location $out
 try{
- & $env:ComSpec /d /c "call `"$vcvars`" >nul && cl /nologo /std:c++17 /EHsc /O2 /W3 /I`"$out`" /I`"$repo/core/deps/glm`" /Fe`"$exe`" `"$cpp`" >`"$log`" 2>&1"
+ & $env:ComSpec /d /c "call `"$vcvars`" >nul && cl /nologo /std:c++17 /EHsc /O2 /W3 /I`"$out`" /I`"$repo/core/deps/glm`" /I`"$repo/core`" /I`"$repo/core/rend/vr`" /Fe`"$exe`" `"$cpp`" >`"$log`" 2>&1"
  if($LASTEXITCODE){Get-Content $log;throw 'Magic renderer test compilation failed'}
  & $exe
  $code=$LASTEXITCODE

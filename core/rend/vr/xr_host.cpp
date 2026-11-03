@@ -237,6 +237,7 @@ glm::mat4 controllerAim[2];		// (the aim pose: the player's own controller model
 // labels while the menu is open; the menu closing, however it closes, gives back what they held. As
 // last logged (noteHolds): heldWas, labelsWere. p1StartWas: player 1's Start's last state, for its press.
 bool p1Armed, menuHowToPlay;
+bool soloStartSelected;
 Holds heldWas[2] { Holds::Controller, Holds::Controller };
 bool labelsWere = true;
 bool p1StartWas;
@@ -407,9 +408,9 @@ bool initActions()
 			|| !createAction(skipAction, "skip", "Reload (the gun's B)", XR_ACTION_TYPE_BOOLEAN_INPUT, true)
 			|| !createAction(menuAction, "menu", "Settings menu", XR_ACTION_TYPE_BOOLEAN_INPUT)
 			|| !createAction(recenterAction, "recenter", "Recenter", XR_ACTION_TYPE_BOOLEAN_INPUT)
-			|| !createAction(laserAction, "laser", "Laser on/off", XR_ACTION_TYPE_BOOLEAN_INPUT)
+			|| !createAction(laserAction, "laser", "Laser and crosshair on/off", XR_ACTION_TYPE_BOOLEAN_INPUT)
 			|| !createAction(hapticAction, "recoil", "Recoil", XR_ACTION_TYPE_VIBRATION_OUTPUT, true)
-			|| !createAction(stickAction, "stick", "Menus (D-pad), world size", XR_ACTION_TYPE_VECTOR2F_INPUT)
+			|| !createAction(stickAction, "stick", "Menus (D-pad), world size", XR_ACTION_TYPE_VECTOR2F_INPUT, true)
 			|| !createAction(gripAction, "grip", "Rack the slide; hold for world size", XR_ACTION_TYPE_FLOAT_INPUT, true))
 		return false;
 	// Either trigger fires; shooting away from the screen reloads. A: player 1's Start. X: the
@@ -1185,7 +1186,9 @@ bool aimAtScene(const rend_context& ctx, const glm::vec3& o, const glm::vec3& d,
 		prev = pass;
 	}
 
-	if (onPlane && (overlayHit || !hasScene))
+	// HUD overlays do not intercept aim while a player is active.
+	const bool interactiveOverlay = serviceControls.active || !(p1Armed || playerInGame(1));
+	if (onPlane && (!hasScene || (interactiveOverlay && overlayHit)))
 	{
 		screen = planeNdc * 0.5f + 0.5f;
 		dist = planeDist;
@@ -1287,10 +1290,11 @@ float autoKnock(int hand)
 	return haptic(hand, 0.02f, 0.6f);
 }
 
-glm::vec2 stickAction2()
+glm::vec2 stickAction2(int hand = -1)
 {
 	XrActionStateGetInfo info { XR_TYPE_ACTION_STATE_GET_INFO };
 	info.action = stickAction;
+	if (hand >= 0) info.subactionPath = handPaths[hand];
 	XrActionStateVector2f stick { XR_TYPE_ACTION_STATE_VECTOR2F };
 	if (!XR_SUCCEEDED(XR(xrGetActionStateVector2f)(session, &info, &stick)) || !stick.isActive)
 		return glm::vec2(0.f);
@@ -1654,7 +1658,9 @@ void updateGun(Gun& g, XrTime time, const XrSpaceLocation *locations, const bool
 		}
 		const float sinceShot = g.lastShot != 0 ? (time - g.lastShot) * 1e-9f : 1e9f;
 		// (a round of the rifle's burst after the pull: half the kick)
-		const float kick = gunKick(sinceShot) * (g.autoKick ? 0.5f : 1.f);
+		// MOK has no native shot confirmation. Do not apply a gun kick to the staff on trigger pulls.
+		const bool staff = model != nullptr && model->staff;
+		const float kick = staff ? 0.f : gunKick(sinceShot) * (g.autoKick ? 0.5f : 1.f);
 		const float twist = ((g.shotCount * 2654435761u) >> 24) / 255.f - 0.5f;	// -0.5..0.5 per shot
 		const glm::vec3 hand = palm;
 		// A long one (the hero's staff, its head 75 cm out) tips up less: its muzzle rises no
@@ -1678,8 +1684,11 @@ void updateGun(Gun& g, XrTime time, const XrSpaceLocation *locations, const bool
 		view.shot = g.shotCount;
 		view.player = g.player;
 		view.menuPointer = false;
+		view.servicePointer = serviceControls.active;
+		view.reticleHead = headPose();
+		view.reticlePanelDistance = (float)config::VrHudDepth * s;
 		view.aimLine = config::VrLaser;
-		view.aimDot = config::VrLaser && (onScreen || aimOutside);
+		view.aimDot = (!serviceControls.active || config::VrLaser) && (onScreen || aimOutside);
 		view.aimOutside = aimOutside && !onScreen;
 		view.aimPoint = o + d * (dist > 0.f ? dist * s : 5.f);
 		// (a hand that holds its controller shows that instead: before play, the menu's How to play)
@@ -1951,10 +1960,12 @@ void updateMenu(XrTime time, bool menuEdge, bool skip, bool skipEdge)
 	static int stickWas;	// 0 at rest, 1 up, 2 down, 3 left, 4 right: pushed past 60%, let go below 40%
 	static XrTime repeatAt;	// held left or right: when it steps again (menu::Input::repeat)
 	menu::Input input {};
-	const bool a = boolAction(startAction, Right);
+	const int activeHand = menu::pointerHand();
+	const int inputHand = activeHand < 0 ? Right : activeHand;
+	const bool a = boolAction(startAction, inputHand);
 	input.select = a && !aWas;
 	aWas = a;
-	const glm::vec2 stick = stickAction2();
+	const glm::vec2 stick = stickAction2(inputHand);
 	int push = 0;
 	if (stickWas != 0 && glm::length(stick) >= 0.4f)
 		push = stickWas;
@@ -2018,7 +2029,8 @@ void updateMenu(XrTime time, bool menuEdge, bool skip, bool skipEdge)
 	for (int hand : { Left, Right })
 	{
 		const menu::Input::Ray& ray = input.ray[hand];
-		if (!ray.valid)
+		if (Gun* gun = gunInHand(hand)) gun->view.aimLine = gun->view.aimDot = false;
+		if (!ray.valid || hand != menu::pointerHand())
 			continue;
 		glm::vec3 at;
 		const bool onPanel = menu::pointer(hand, at);
@@ -2038,7 +2050,7 @@ void updateMenu(XrTime time, bool menuEdge, bool skip, bool skipEdge)
 		}
 		view.menuPointer = true;
 		view.aimLine = true;
-		view.aimDot = onPanel;
+		view.aimDot = false; // the settings panel draws the contact dot
 		view.aimOutside = false;
 		view.aimPoint = onPanel ? at : ray.origin + ray.dir * 3.f;
 	}
@@ -2084,6 +2096,14 @@ void sampleStartButtons(XrTime time, bool leftDown, bool rightDown, bool ready,
     if (!config::VrXrGun || config::GGPOEnable) serviceControls.reset();
     const bool left = startRelease.sample(Left, leftDown, ready && allowed);
     const bool right = startRelease.sample(Right, rightDown, ready && allowed);
+    if (!soloStartSelected && !dualWield && !p2JoinPending && !playerInGame(0)
+            && !serviceControls.active && !serviceControls.pending && (left || right))
+    {
+        guns[0].hand = right ? Right : Left;
+        guns[0].triggerWas = guns[0].triggerWait = true;
+        guns[0].pullAt = 0;
+        soloStartSelected = true;
+    }
     playerStartButtons(left, right, p1Start, p2Start);
     const bool wasPending = serviceControls.pending;
     const bool wasHeld[2]{serviceControls.held[Left], serviceControls.held[Right]};
@@ -2133,7 +2153,7 @@ void updateLightgun(XrTime time)
 		slide.held = false;
 		p2StartWas = true;	// a Start of player 2's still held doesn't join at once
 		// controllers in both hands again, with the labels (a How to play left on ends, with its line)
-		p1Armed = false;
+		p1Armed = soloStartSelected = false;
 		setHowToPlay(false, "new game");
 		noteHolds("new game");
 	}
@@ -2214,15 +2234,14 @@ void updateLightgun(XrTime time)
 	const bool rightStart = prepButtons[1] && !startSwallow;
 	bool p1Start, p2Start;
     sampleStartButtons(time, leftStart, rightStart, gameStartReady(),
-            config::VrXrGun && focused && !preparing && !menuOpen && !menuEdge && !startSwallow, p1Start, p2Start);
+            config::VrXrGun && focused && !preparing && !hands::staffPrepRequired() && !menuOpen && !menuEdge && !startSwallow, p1Start, p2Start);
 	const bool skip = prepButtons[2];
 	const bool skipEdge = skip && !skipWas;
 	skipWas = skip;
 	if (!rawSkip) skipSwallow = false;
-	if (preparing)
+	if (preparing || hands::staffPrepRequired())
 	{
-		// B (or Y): not now, the arcade gun this time (the menu button does nothing now)
-		if (rawSkip) {
+		if (rawSkip && !hands::staffPrepRequired()) {
 			skipSwallow = true;
 			hands::skipPrep();
 		}
@@ -2284,10 +2303,15 @@ void updateLightgun(XrTime time)
 	const bool laser = boolAction(laserAction);
 	if (laser && !laserWas)
 	{
-		config::VrLaser.set(!config::VrLaser);
+		const bool enabled = !(config::VrLaser || config::VrReticleMode != 2);
+		config::VrLaser.set(enabled);
+		config::VrReticleMode.set(enabled ? 1 : 2);
+		config::setAutoSave(false);
 		config::saveBool("config", "vr.Laser", config::VrLaser);
+		config::saveInt("config", "vr.ReticleMode", config::VrReticleMode);
+		config::setAutoSave(true);
 		haptic(Right, 0.03f, 0.4f);
-		NOTICE_LOG(INPUT, "XR: laser %s", config::VrLaser ? "on" : "off");
+		NOTICE_LOG(INPUT, "XR: laser and crosshair %s", config::VrLaser ? "on" : "off");
 	}
 	laserWas = laser;
 	const glm::vec2 stick = stickAction2();
@@ -2379,7 +2403,7 @@ void updateLightgun(XrTime time)
 		// One gun: in the hand whose trigger is pulled while the gun hand's isn't, or the
 		// other one when the gun hand's controller is gone (asleep, battery).
 		const int otherHand = 1 - gun.hand;
-		if (!gun.triggerWas && ((tracked[otherHand] && !tracked[gun.hand]) || (pulls[otherHand] > 0.6f && pulls[gun.hand] < 0.35f)))
+		if (!gun.triggerWas && !p1Start && ((tracked[otherHand] && !tracked[gun.hand]) || (pulls[otherHand] > 0.6f && pulls[gun.hand] < 0.35f)))
 		{
 			gun.hand = otherHand;
 			NOTICE_LOG(INPUT, "XR: the gun is in the %s hand", gun.hand == Right ? "right" : "left");
@@ -2789,6 +2813,13 @@ bool serviceMenuAvailable()
     return config::VrXrGun && !config::GGPOEnable && gameStartLoaded();
 }
 
+bool playerOneArmed() { return p1Armed; }
+
+bool serviceMenuActive()
+{
+    return serviceControls.active || serviceControls.pending;
+}
+
 bool serviceMenuExitAvailable()
 {
     return serviceControls.active && serviceStyle(settings.content.gameId)!=ServiceStyle::Naomi;
@@ -2948,7 +2979,7 @@ int dualP1Hand()
 
 int p1Hand()
 {
-	return dualWield ? dualP1Hand() : Right;
+	return dualWield ? dualP1Hand() : guns[0].hand;
 }
 
 int hapticsLevel()
@@ -3151,7 +3182,15 @@ bool frame()
 					: "Only this once: the game plays itself to its game over, fast.", 0.047f, muted },
 		};
 		panel.progress = hands::prepProgress();
-		panel.footer = "B: skip it for now (the arcade gun this time)";
+		panel.footer = staff ? "Please wait for staff setup to finish." : "B: skip it for now (the arcade gun this time)";
+	}
+	else if (staff && hands::staffPrepRequired())
+	{
+		panel.lines = {
+			{ title, 0.085f, violet },
+			{ "Staff setup could not finish", 0.064f, cream },
+			{ "Check your game files, storage, or online mode, then restart.", 0.047f, muted },
+		};
 	}
 	else if (std::chrono::steady_clock::now() < doneUntil)
 		panel.lines = {
